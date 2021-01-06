@@ -14,7 +14,7 @@
     "email": "support@mimix.io",
     "url": "https://miki.mimix.io"
   },
-  "license": "BlueOak-1.0.0",
+  "license": "UNLICENSED",
   "main": "app/main.js",
   "scripts": {
     "start": "electron ."
