@@ -1,12 +1,12 @@
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 const { app, BrowserWindow } = require('electron');
-const host = process.env.HOST || '127.0.0.1';
-const port = process.env.PORT || 3000;
-
 const path = require('path');
 const child_process = require('child_process');
 const fs = require('fs');
+
+const HOST = process.env.HOST || '127.0.0.1';
+const PORT = process.env.PORT || 3000;
 
 var mikiPath = null;
 var child_proc = null;
@@ -32,9 +32,7 @@ function createWindow () {
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL(`http://${host}:${port}`);
-  // mainWindow.webContents.openDevTools()
-
+  mainWindow.loadURL(`http://${HOST}:${PORT}`);
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
