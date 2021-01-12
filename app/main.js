@@ -1,4 +1,4 @@
-const VERSION = "1.0.1";
+const VERSION = "1.2.0";
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -25,6 +25,10 @@ function runMiki () {
   });
 }
 
+function stopMiki () {
+  child_proc.kill("SIGTERM");
+}
+
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 1800,
@@ -34,6 +38,7 @@ function createWindow () {
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
   mainWindow.on('closed', () => {
+    stopMiki();
     mainWindow = null;
   });
 }
