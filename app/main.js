@@ -14,7 +14,7 @@ var child_proc = null;
 let mainWindow;
 
 function setMikiPath () {
-    mikiPath= path.resolve(__dirname, 'miki');
+  mikiPath = path.resolve(__dirname, 'miki');
 }
 
 function runMiki () {
