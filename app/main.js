@@ -1,4 +1,4 @@
-const VERSION = "1.2.0";
+const VERSION = "1.4.0";
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -7,26 +7,13 @@ const fs = require('fs');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 3000;
-
-var mikiPath = null;
-var child_proc = null;
+const MIKIROOT = path.resolve(__dirname, 'miki');
 
 let mainWindow;
 
-function setMikiPath () {
-  mikiPath = path.resolve(__dirname, 'miki');
-}
-
 function runMiki () {
-  process.chdir(mikiPath);
-  child_proc = child_process.exec('npm start');
-  child_proc.stdout.on('data', (data) => {
-    console.log(data);
-  });
-}
-
-function stopMiki () {
-  child_proc.kill("SIGTERM");
+  process.chdir(MIKIROOT);
+  require(__dirname + '/miki/server/index.js');
 }
 
 function createWindow () {
@@ -38,13 +25,11 @@ function createWindow () {
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
   mainWindow.on('closed', () => {
-    stopMiki();
     mainWindow = null;
   });
 }
 
 async function runApp () {
-  setMikiPath();
   runMiki();
   await new Promise(resolve => setTimeout(resolve, 10000));
   createWindow();
