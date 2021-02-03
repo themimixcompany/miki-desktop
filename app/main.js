@@ -4,14 +4,34 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const child_process = require('child_process');
 const fs = require('fs');
+const portscanner = require('portscanner');
+const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 3000;
 const MIKIROOT = path.resolve(__dirname, 'miki');
 
+let pythonPath;
 let mainWindow;
 
+function setPythonPath () {
+  console.log(`** setPythonPath`);
+  console.log(`__dirname: ${__dirname}`);
+  if (process.platform === 'win32'){
+    if (fs.existsSync(path.resolve(__dirname, 'resources/app/app/python/windows/python'))) {
+      pythonPath = path.resolve(__dirname, 'resources/app/app/python/windows/python');
+    } else {
+      pythonPath = "python";
+    }
+  } else {
+    pythonPath = "python";
+  }
+}
+
 function runMiki () {
+  console.log(`** runMiki`);
+  console.log(`__dirname: ${__dirname}`);
+  console.log(`MIKIROOT: ${MIKIROOT}`);
   process.chdir(MIKIROOT);
   require(__dirname + '/miki/server/index.js');
 }
@@ -29,9 +49,25 @@ function createWindow () {
   });
 }
 
-async function runApp () {
+function runApp () {
+  let stat;
+
+  setPythonPath();
   runMiki();
-  await new Promise(resolve => setTimeout(resolve, 10000));
+
+  outer:
+  while (true) {
+    portscanner.checkPortStatus(PORT, HOST, (error, status) => {
+      stat = status;
+    });
+
+    if (stat == 'open') {
+      break outer;
+    } else {
+      sleep(5*1000);
+    }
+  }
+
   createWindow();
 }
 
