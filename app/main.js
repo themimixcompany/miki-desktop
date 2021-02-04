@@ -15,11 +15,11 @@ let pythonPath;
 let mainWindow;
 
 function setPythonPath () {
-  console.log(`** setPythonPath`);
-  console.log(`__dirname: ${__dirname}`);
   if (process.platform === 'win32'){
-    if (fs.existsSync(path.resolve(__dirname, 'resources/app/app/python/windows/python'))) {
-      pythonPath = path.resolve(__dirname, 'resources/app/app/python/windows/python');
+    if (fs.existsSync(path.resolve(__dirname, 'python/windows/python.exe'))) {
+      pythonPath = path.resolve(__dirname, 'python/windows/python.exe');
+    } else if (fs.existsSync(path.resolve(__dirname, 'resources/app/app/python/windows/python.exe'))) {
+      pythonPath = path.resolve(__dirname, 'resources/app/app/python/windows/python.exe');
     } else {
       pythonPath = "python";
     }
@@ -29,9 +29,6 @@ function setPythonPath () {
 }
 
 function runMiki () {
-  console.log(`** runMiki`);
-  console.log(`__dirname: ${__dirname}`);
-  console.log(`MIKIROOT: ${MIKIROOT}`);
   process.chdir(MIKIROOT);
   require(__dirname + '/miki/server/index.js');
 }
@@ -64,7 +61,7 @@ function runApp () {
     if (stat == 'open') {
       break outer;
     } else {
-      sleep(5*1000);
+      sleep(1*1000);
     }
   }
 
