@@ -1,4 +1,4 @@
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -11,22 +11,7 @@ const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 3000;
 const MIKIROOT = path.resolve(__dirname, 'miki');
 
-let pythonPath;
 let mainWindow;
-
-function setPythonPath () {
-  if (process.platform === 'win32'){
-    if (fs.existsSync(path.resolve(__dirname, 'python/windows/python.exe'))) {
-      pythonPath = path.resolve(__dirname, 'python/windows/python.exe');
-    } else if (fs.existsSync(path.resolve(__dirname, 'resources/app/app/python/windows/python.exe'))) {
-      pythonPath = path.resolve(__dirname, 'resources/app/app/python/windows/python.exe');
-    } else {
-      pythonPath = "python";
-    }
-  } else {
-    pythonPath = "python";
-  }
-}
 
 function runMiki () {
   process.chdir(MIKIROOT);
@@ -49,7 +34,6 @@ function createWindow () {
 function runApp () {
   let stat;
 
-  setPythonPath();
   runMiki();
 
   outer:
