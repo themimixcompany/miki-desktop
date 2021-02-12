@@ -20,12 +20,15 @@ function runMiki () {
 
 function createWindow () {
   mainWindow = new BrowserWindow({
-    width: 1800,
-    height: 900
+    width: 1024,
+    height: 768,
+    center: true
   });
 
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
+  mainWindow.maximize();
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
