@@ -1,8 +1,8 @@
-const VERSION = "1.5.0";
+const VERSION = "2.0.0";
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const child_process = require('child_process');
+const { execSync, spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const portscanner = require('portscanner');
 const sleep = require('system-sleep');
@@ -11,9 +11,66 @@ const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 3000;
 const MIKIROOT = path.resolve(__dirname, 'miki');
 
+var PG_PATH;
+const PG_HOST = "localhost";
+const PG_PORT = "5432";
+const PG_USER = "doadmin";
+const PG_PASSWORD = "0123456789";
+const PG_DATABASE = "defaultdb";
+
 let mainWindow;
 
-function runMiki () {
+function debug (error, stdout, stderr) {
+  if (error) {
+    console.error(`exec error: ${error}`);
+  }
+  console.log(`stdout: ${stdout}`);
+  console.error(`stderr: ${stderr}`);
+}
+
+function initDatabase () {
+  console.log("** Initializing database...");
+  spawnSync(`${PG_PATH}/bin/initdb`, ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
+}
+
+function startDatabase () {
+  console.log("** Starting database server...");
+  spawn(`${PG_PATH}/bin/pg_ctl`, ['start', '-D', `${PG_PATH}/data`]);
+  sleep(5*1000);
+}
+
+function createDatabase () {
+  console.log("** Creating main database...");
+  spawn(`${PG_PATH}/bin/createdb`, ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
+}
+
+function startPostgresWindows () {
+  console.log("** Starting Postgres for Windows...");
+
+  PG_PATH = path.resolve(__dirname, 'pgsql/windows');
+
+  if(fs.existsSync(`${PG_PATH}/data`)) {
+    startDatabase();
+  } else {
+    process.env.PGPASSWORD = PG_PASSWORD;
+    initDatabase();
+    startDatabase();
+    createDatabase();
+  }
+}
+
+function startPostgres () {
+  switch(process.platform) {
+  case 'win32':
+    startPostgresWindows();
+    break;
+  default:
+    console.log(`The platform ${process.platform} is unsupported. Aborting.`);
+    process.exit(1);
+  }
+}
+
+function startMiki () {
   process.chdir(MIKIROOT);
   require(__dirname + '/miki/server/index.js');
 }
@@ -37,7 +94,8 @@ function createWindow () {
 function runApp () {
   let stat;
 
-  runMiki();
+  startPostgres();
+  startMiki();
 
   outer:
   while (true) {
@@ -46,6 +104,7 @@ function runApp () {
     });
 
     if (stat == 'open') {
+      sleep(5*1000);
       break outer;
     } else {
       sleep(1*1000);
