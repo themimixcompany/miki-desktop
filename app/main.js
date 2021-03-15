@@ -3,7 +3,7 @@ const VERSION = "2.3.0";
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { execSync, spawn, spawnSync } = require('child_process');
-const fs = require('fs');
+const fs = require('fs-extra');
 const portscanner = require('portscanner');
 const sleep = require('system-sleep');
 
@@ -26,6 +26,29 @@ function debug (error, stdout, stderr) {
   }
   console.log(`stdout: ${stdout}`);
   console.error(`stderr: ${stderr}`);
+}
+
+function installPostgres () {
+  console.log("** installPostgres start...");
+
+  const appdata = process.env.APPDATA;
+  const sourcePath = path.resolve(__dirname, 'pgsql/windows');
+  const destPath = path.resolve(`${appdata}/Mimix/pgsql`);
+
+  if(fs.existsSync(destPath)) {
+    return true;
+  } else {
+    fs.mkdirSync(path.resolve(`${appdata}/Mimix`));
+
+    try {
+      fs.copySync(sourcePath, destPath);
+      console.log('success!');
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  console.log("** installPostgres done.");
 }
 
 function initDatabase () {
@@ -69,6 +92,7 @@ function startPostgresWindows () {
     startDatabase();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
+    installPostgres();
     initDatabase();
     startDatabase();
     createDatabase();
