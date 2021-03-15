@@ -7,7 +7,7 @@ MAKEFLAGS += --no-builtin-rules
 .DELETE_ON_ERROR:
 .RECIPEPREFIX +=
 
-.PHONY: all clean synchronize
+.PHONY: all clean tarball
 
 DIR := $(shell basename "$(shell pwd)")
 BASE_NAME = miki-desktop
@@ -17,5 +17,8 @@ DOCKERFILE = ./Dockerfile
 
 all: synchronize
 
-synchronize:
-  rsync -avz --delete --exclude node_modules ./ pegasus:Desktop/miki-desktop
+tarball:
+  rm -f ${HOME}/mimix/fkd/mkadm/dat/miki-desktop.tar.xz
+  pushd ..
+  tar -cJf ${HOME}/mimix/fkd/mkadm/dat/miki-desktop.tar.xz --exclude=".git*" miki-desktop
+  popd
