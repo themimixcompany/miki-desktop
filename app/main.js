@@ -1,4 +1,4 @@
-const VERSION = "2.3.0";
+const VERSION = "2.4.0";
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -18,6 +18,8 @@ const PG_USER = "doadmin";
 const PG_PASSWORD = "0123456789";
 const PG_DATABASE = "defaultdb";
 
+const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
+
 let mainWindow;
 
 function debug (error, stdout, stderr) {
@@ -33,12 +35,12 @@ function installPostgres () {
 
   const appdata = process.env.APPDATA;
   const sourcePath = path.resolve(__dirname, 'pgsql/windows');
-  const destPath = path.resolve(`${appdata}/Mimix/pgsql`);
+  const destPath = path.resolve(`${MIMIX_APPDATA}/pgsql`);
 
   if(fs.existsSync(destPath)) {
     return true;
   } else {
-    fs.mkdirSync(path.resolve(`${appdata}/Mimix`));
+    fs.mkdirSync(MIMIX_APPDATA);
 
     try {
       fs.copySync(sourcePath, destPath);
@@ -84,9 +86,7 @@ function setupDatabase () {
 function startPostgresWindows () {
   console.log("** Starting Postgres for Windows...");
 
-  const appdata = process.env.APPDATA;
-
-  PG_PATH = path.resolve(`${appdata}/Mimix/pgsql`);
+  PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
 
   if(fs.existsSync(`${PG_PATH}/data`)) {
     startDatabase();
