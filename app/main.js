@@ -1,4 +1,4 @@
-const VERSION = "2.0.0";
+const VERSION = "2.2.0";
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -13,7 +13,7 @@ const MIKIROOT = path.resolve(__dirname, 'miki');
 
 var PG_PATH;
 const PG_HOST = "localhost";
-const PG_PORT = "5432";
+const PG_PORT = 5432;
 const PG_USER = "doadmin";
 const PG_PASSWORD = "0123456789";
 const PG_DATABASE = "defaultdb";
@@ -44,6 +44,19 @@ function createDatabase () {
   spawn(`${PG_PATH}/bin/createdb`, ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
 }
 
+function execSQL(statement) {
+  spawn(`${PG_PATH}/bin/psql`,
+        ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement]);
+}
+
+function setupDatabase () {
+  console.log("** Setting up the main database...");
+  execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
+  // execSQL(`UPDATE users SET email = 'support@mimix.io' WHERE id = '1';`);
+  // execSQL(`UPDATE users SET password = '0123456789' WHERE id = '1';`);
+  // execSQL(`UPDATE users SET "mustChangePwd" = 't' WHERE id = '1';`);
+}
+
 function startPostgresWindows () {
   console.log("** Starting Postgres for Windows...");
 
@@ -56,6 +69,7 @@ function startPostgresWindows () {
     initDatabase();
     startDatabase();
     createDatabase();
+    setupDatabase();
   }
 }
 
