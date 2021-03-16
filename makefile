@@ -15,10 +15,10 @@ IMAGE_NAME = $(BASE_NAME)-${TAG}
 PRODUCT_NAME = Miki Desktop
 DOCKERFILE = ./Dockerfile
 
+TARBALL = ${HOME}/mimix/fkd/mkadm/dat/miki-desktop.tar.xz
+
 all: synchronize
 
 tarball:
-  rm -f ${HOME}/mimix/fkd/mkadm/dat/miki-desktop.tar.xz
-  pushd ..
-  tar -cJf ${HOME}/mimix/fkd/mkadm/dat/miki-desktop.tar.xz --exclude=".git*" miki-desktop
-  popd
+  rm -f $(TARBALL)
+  tar -C .. -cJf $(TARBALL) --exclude=".git*" miki-desktop

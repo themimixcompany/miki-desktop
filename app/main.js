@@ -54,22 +54,22 @@ function installPostgres () {
 }
 
 function initDatabase () {
-  console.log("** initDatabase start...");
+  console.log("** initDatabase start");
   spawnSync(`${PG_PATH}/bin/initdb`,
             ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
-  console.log("** initDatabase done.");
+  console.log("** initDatabase end");
 }
 
 function startDatabase () {
-  console.log("** startDatabase start...");
+  console.log("** startDatabase start");
   spawn(`${PG_PATH}/bin/pg_ctl`, ['start', '-D', `${PG_PATH}/data`]);
-  console.log("** startDatabase done.");
+  console.log("** startDatabase end");
 }
 
 function createDatabase () {
-  console.log("** createDatabase start...");
+  console.log("** createDatabase start");
   spawnSync(`${PG_PATH}/bin/createdb`, ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
-  console.log("** createDatabase done.");
+  console.log("** createDatabase end");
 }
 
 function execSQL(statement) {
@@ -78,9 +78,9 @@ function execSQL(statement) {
 }
 
 function setupDatabase () {
-  console.log("** setupDatabase start...");
+  console.log("** setupDatabase start");
   execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
-  console.log("** setupDatabase done.");
+  console.log("** setupDatabase end");
 }
 
 function startPostgresWindows () {
