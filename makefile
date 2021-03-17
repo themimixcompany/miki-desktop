@@ -21,4 +21,4 @@ all: synchronize
 
 tarball:
   rm -f $(TARBALL)
-  tar -C .. -cJf $(TARBALL) --exclude=".git*" miki-desktop
+  tar -C .. -cJf $(TARBALL) --exclude=".git*" --exclude "node_modules" miki-desktop
