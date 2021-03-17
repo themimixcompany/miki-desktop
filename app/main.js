@@ -1,4 +1,4 @@
-const VERSION = "2.4.0";
+const VERSION = '2.4.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -12,11 +12,11 @@ const PORT = process.env.PORT || 80;
 const MIKIROOT = path.resolve(__dirname, 'miki');
 
 var PG_PATH;
-const PG_HOST = "localhost";
+const PG_HOST = 'localhost';
 const PG_PORT = 5432;
-const PG_USER = "doadmin";
-const PG_PASSWORD = "0123456789";
-const PG_DATABASE = "defaultdb";
+const PG_USER = 'doadmin';
+const PG_PASSWORD = '0123456789';
+const PG_DATABASE = 'defaultdb';
 
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
@@ -31,7 +31,7 @@ function debug (error, stdout, stderr) {
 }
 
 function installPostgres () {
-  console.log("** installPostgres start...");
+  console.log('** installPostgres start');
 
   const appdata = process.env.APPDATA;
   const sourcePath = path.resolve(__dirname, 'pgsql/windows');
@@ -50,26 +50,26 @@ function installPostgres () {
     }
   }
 
-  console.log("** installPostgres done.");
+  console.log('** installPostgres done');
 }
 
 function initDatabase () {
-  console.log("** initDatabase start");
+  console.log('** initDatabase start');
   spawnSync(`${PG_PATH}/bin/initdb`,
             ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
-  console.log("** initDatabase end");
+  console.log('** initDatabase end');
 }
 
 function startDatabase () {
-  console.log("** startDatabase start");
+  console.log('** startDatabase start');
   spawn(`${PG_PATH}/bin/pg_ctl`, ['start', '-D', `${PG_PATH}/data`]);
-  console.log("** startDatabase end");
+  console.log('** startDatabase end');
 }
 
 function createDatabase () {
-  console.log("** createDatabase start");
+  console.log('** createDatabase start');
   spawnSync(`${PG_PATH}/bin/createdb`, ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
-  console.log("** createDatabase end");
+  console.log('** createDatabase end');
 }
 
 function execSQL(statement) {
@@ -78,13 +78,13 @@ function execSQL(statement) {
 }
 
 function setupDatabase () {
-  console.log("** setupDatabase start");
+  console.log('** setupDatabase start');
   execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
-  console.log("** setupDatabase end");
+  console.log('** setupDatabase end');
 }
 
 function startPostgresWindows () {
-  console.log("** Starting Postgres for Windows...");
+  console.log('** Starting Postgres for Windows...');
 
   PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
 
