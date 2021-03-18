@@ -102,6 +102,8 @@ function updateConfigYml () {
       }
     });
   });
+
+  console.log('** updateConfigYml end');
 }
 
 function startPostgresWindows () {
@@ -110,15 +112,16 @@ function startPostgresWindows () {
   PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
 
   if(fs.existsSync(`${PG_PATH}/data`)) {
+    updateConfigYml();
     startDatabase();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
+    updateConfigYml();
     installPostgres();
     initDatabase();
     startDatabase();
     createDatabase();
     setupDatabase();
-    updateConfigYml();
   }
 }
 
