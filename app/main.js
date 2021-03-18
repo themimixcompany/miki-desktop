@@ -1,4 +1,4 @@
-const VERSION = '2.4.1';
+const VERSION = '2.5.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -83,6 +83,27 @@ function setupDatabase () {
   console.log('** setupDatabase end');
 }
 
+function updateConfigYml () {
+  console.log('** updateConfigYml start');
+
+  const configPath = path.resolve(__dirname + '/miki/config.yml');
+  const dataPath = path.resolve(`${MIMIX_APPDATA}/pgsql/data`);
+
+  fs.readFile(configPath, 'utf8', (err, data) => {
+    if (err) {
+      return console.log(err);
+    }
+
+    var result = data.replace(/.\/data/g, dataPath);
+
+    fs.writeFile(configPath, result, 'utf8', (err) => {
+      if (err) {
+        return console.log(err);
+      }
+    });
+  });
+}
+
 function startPostgresWindows () {
   console.log('** Starting Postgres for Windows...');
 
@@ -97,6 +118,7 @@ function startPostgresWindows () {
     startDatabase();
     createDatabase();
     setupDatabase();
+    updateConfigYml();
   }
 }
 
