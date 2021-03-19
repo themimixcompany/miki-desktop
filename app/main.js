@@ -1,4 +1,4 @@
-const VERSION = '2.5.2';
+const VERSION = '2.5.3';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -9,7 +9,7 @@ const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 80;
-const MIKIROOT = path.resolve(__dirname, 'miki');
+const MIKI_ROOT = path.resolve(__dirname, 'miki');
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 var PG_PATH;
@@ -103,7 +103,7 @@ function getValueByKey(text, key) {
 }
 
 function setupAccount () {
-  const configPath = path.resolve(MIKIROOT, 'config.yml');
+  const configPath = path.resolve(MIKI_ROOT, 'config.yml');
   let email;
   let password;
 
@@ -128,7 +128,7 @@ function setupAccount () {
 function updateConfigYml () {
   console.log('** updateConfigYml start');
 
-  const configPath = path.resolve(MIKIROOT, 'config.yml');
+  const configPath = path.resolve(MIKI_ROOT, 'config.yml');
   const dataPath = path.resolve(PG_PATH, 'data');
   var result;
 
@@ -183,7 +183,7 @@ function startPostgres () {
 }
 
 function startMiki () {
-  process.chdir(MIKIROOT);
+  process.chdir(MIKI_ROOT);
   require(__dirname + '/miki/server/index.js');
 }
 
