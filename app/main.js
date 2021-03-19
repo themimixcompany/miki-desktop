@@ -1,4 +1,4 @@
-const VERSION = '2.5.5';
+const VERSION = '2.5.6';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -9,8 +9,6 @@ const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 80;
-const MIKI_ROOT = path.resolve(__dirname, 'miki');
-const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 var PG_PATH;
 const PG_HOST = 'localhost';
@@ -18,6 +16,9 @@ const PG_PORT = 5432;
 const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
+
+const MIKI_ROOT = path.resolve(__dirname, 'miki');
+const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 let mainWindow;
 
@@ -30,9 +31,8 @@ function debug (error, stdout, stderr) {
 }
 
 function installPostgres () {
-  console.log('** installPostgres start');
+  console.log('** installPostgres');
 
-  const appdata = process.env.APPDATA;
   const sourcePath = path.resolve(__dirname, 'pgsql/windows');
   const destPath = PG_PATH;
 
@@ -42,91 +42,15 @@ function installPostgres () {
     fs.mkdirSync(MIMIX_APPDATA);
 
     try {
-      fs.copySync(sourcePath, destPath);
+      fs.moveSync(sourcePath, destPath);
     } catch (err) {
       console.error(err);
     }
   }
-
-  console.log('** installPostgres done');
-}
-
-function initDatabase () {
-  console.log('** initDatabase start');
-  spawnSync(`${PG_PATH}/bin/initdb`,
-            ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
-  console.log('** initDatabase end');
-}
-
-function startDatabase () {
-  console.log('** startDatabase start');
-  spawn(`${PG_PATH}/bin/pg_ctl`, ['start', '-D', `${PG_PATH}/data`]);
-  sleep(5*1000);
-  console.log('** startDatabase end');
-}
-
-function createDatabase () {
-  console.log('** createDatabase start');
-  spawnSync(`${PG_PATH}/bin/createdb`, ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
-  console.log('** createDatabase end');
-}
-
-function execSQL(statement) {
-  spawnSync(`${PG_PATH}/bin/psql`,
-            ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement]);
-}
-
-function setupDatabase () {
-  console.log('** setupDatabase start');
-  execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
-  console.log('** setupDatabase end');
-}
-
-function installCore () {
-  console.log('** installCore start');
-  const corePath = path.resolve(__dirname, 'pgsql/dumps/miki-core.postgres');
-  spawnSync(`${PG_PATH}/bin/pg_restore`,
-            ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
-  console.log('** installCore end');
-}
-
-function getValueByKey(text, key) {
-  const regex = new RegExp("^" + key + ": (.*)$", "m");
-  const match = regex.exec(text);
-
-  if (match) {
-    return match[1];
-  }
-  else {
-    return null;
-  }
-}
-
-function setupAccount () {
-  const configPath = path.resolve(MIKI_ROOT, 'config.yml');
-  let email;
-  let password;
-
-  console.log('** setupAccount start');
-
-  fs.readFile(configPath, 'utf8', (err, data) => {
-    if (err) {
-      console.error(err);
-    }
-
-    email = getValueByKey(data, 'email');
-    password = getValueByKey(data, 'password');
-
-    execSQL(`UPDATE users SET email = '${email}' WHERE id = '1';`);
-    execSQL(`UPDATE users SET password = '${password}' WHERE id = '1';`);
-    execSQL(`UPDATE users SET "mustChangePwd" = 't' WHERE id = '1';`);
-  });
-
-  console.log('** setupAccount end');
 }
 
 function updateConfigYml () {
-  console.log('** updateConfigYml start');
+  console.log('** updateConfigYml');
 
   const configPath = path.resolve(MIKI_ROOT, 'config.yml');
   const dataPath = path.resolve(PG_PATH, 'data');
@@ -145,8 +69,81 @@ function updateConfigYml () {
       }
     });
   });
+}
 
-  console.log('** updateConfigYml end');
+function initDatabase () {
+  console.log('** initDatabase');
+
+  spawnSync(`${PG_PATH}/bin/initdb`,
+            ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
+}
+
+function startDatabase () {
+  console.log('** startDatabase');
+
+  spawn(`${PG_PATH}/bin/pg_ctl`,
+        ['start', '-D', `${PG_PATH}/data`]);
+
+  sleep(5*1000);
+}
+
+function createDatabase () {
+  console.log('** createDatabase');
+
+  spawnSync(`${PG_PATH}/bin/createdb`,
+            ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
+}
+
+function execSQL(statement) {
+  spawnSync(`${PG_PATH}/bin/psql`,
+            ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement]);
+}
+
+function setupDatabase () {
+  console.log('** setupDatabase');
+
+  execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
+}
+
+function installCore () {
+  console.log('** installCore');
+
+  const corePath = path.resolve(__dirname, 'pgsql/dumps/miki-core.postgres');
+  spawnSync(`${PG_PATH}/bin/pg_restore`,
+            ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
+}
+
+function getValueByKey(text, key) {
+  const regex = new RegExp("^" + key + ": (.*)$", "m");
+  const match = regex.exec(text);
+
+  if (match) {
+    return match[1];
+  }
+  else {
+    return null;
+  }
+}
+
+function setupAccount () {
+  console.log('** setupAccount');
+
+  const configPath = path.resolve(MIKI_ROOT, 'config.yml');
+  let email;
+  let password;
+
+  fs.readFile(configPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+    }
+
+    email = getValueByKey(data, 'email');
+    password = getValueByKey(data, 'password');
+
+    execSQL(`UPDATE users SET email = '${email}' WHERE id = '1';`);
+    execSQL(`UPDATE users SET password = '${password}' WHERE id = '1';`);
+    execSQL(`UPDATE users SET "mustChangePwd" = 't' WHERE id = '1';`);
+  });
 }
 
 function startPostgresWindows () {
@@ -183,7 +180,7 @@ function startPostgres () {
 
 function startMiki () {
   process.chdir(MIKI_ROOT);
-  require(__dirname + '/miki/server/index.js');
+  require(__dirname, 'miki/server/index.js');
 }
 
 function createWindow () {
