@@ -1,4 +1,4 @@
-const VERSION = '2.5.4';
+const VERSION = '2.5.5';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -165,9 +165,8 @@ function startPostgresWindows () {
     startDatabase();
     createDatabase();
     setupDatabase();
-
-    // installCore();
-    // setupAccount();
+    installCore();
+    setupAccount();
   }
 }
 
