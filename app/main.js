@@ -1,4 +1,4 @@
-const VERSION = '2.5.3';
+const VERSION = '2.5.4';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -194,7 +194,7 @@ function createWindow () {
     center: true
   });
 
-  mainWindow.setMenuBarVisibility(false);
+  mainWindow.setMenuBarVisibility(true);
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
   mainWindow.maximize();
 
