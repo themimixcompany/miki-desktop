@@ -44,7 +44,6 @@ function installPostgres () {
 
     try {
       fs.copySync(sourcePath, destPath);
-      console.log('success!');
     } catch (err) {
       console.error(err);
     }
@@ -92,18 +91,54 @@ function installCore () {
   console.log('** installCore end');
 }
 
+function getValueByKey(text, key) {
+  const regex = new RegExp("^" + key + ": (.*)$", "m");
+  const match = regex.exec(text);
+
+  if (match) {
+    return match[1];
+  }
+  else {
+    return null;
+  }
+}
+
+function setupAccount () {
+  const configPath = path.resolve(__dirname, 'miki/config.yml');
+  let email;
+  let password;
+
+  console.log('** setupAccount start');
+
+  fs.readFile(configPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+    }
+
+    email = getValueByKey(data, 'email');
+    password = getValueByKey(data, 'password');
+
+    execSQL(`UPDATE users SET email = '${email}' WHERE id = '1';`);
+    execSQL(`UPDATE users SET password = '${password}' WHERE id = '1';`);
+    execSQL(`UPDATE users SET "mustChangePwd" = 't' WHERE id = '1';`);
+  });
+
+  console.log('** setupAccount end');
+}
+
 function updateConfigYml () {
   console.log('** updateConfigYml start');
 
-  const configPath = path.resolve(__dirname + '/miki/config.yml');
+  const configPath = path.resolve(__dirname, 'miki/config.yml');
   const dataPath = path.resolve(PG_PATH, 'data');
+  var result;
 
   fs.readFile(configPath, 'utf8', (err, data) => {
     if (err) {
       console.log(err);
     }
 
-    var result = data.replace(/.\/data/g, dataPath);
+    result = data.replace(/.\/data/g, dataPath);
 
     fs.writeFile(configPath, result, 'utf8', (err) => {
       if (err) {
@@ -131,7 +166,9 @@ function startPostgresWindows () {
     startDatabase();
     createDatabase();
     setupDatabase();
-    installCore();
+
+    // installCore();
+    // setupAccount();
   }
 }
 
