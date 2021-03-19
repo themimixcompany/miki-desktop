@@ -1,4 +1,4 @@
-const VERSION = '2.5.0';
+const VERSION = '2.5.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -35,7 +35,7 @@ function installPostgres () {
 
   const appdata = process.env.APPDATA;
   const sourcePath = path.resolve(__dirname, 'pgsql/windows');
-  const destPath = path.resolve(`${MIMIX_APPDATA}/pgsql`);
+  const destPath = PG_PATH;
 
   if(fs.existsSync(destPath)) {
     return true;
@@ -63,6 +63,7 @@ function initDatabase () {
 function startDatabase () {
   console.log('** startDatabase start');
   spawn(`${PG_PATH}/bin/pg_ctl`, ['start', '-D', `${PG_PATH}/data`]);
+  sleep(5*1000);
   console.log('** startDatabase end');
 }
 
@@ -83,22 +84,30 @@ function setupDatabase () {
   console.log('** setupDatabase end');
 }
 
+function installCore () {
+  console.log('** installCore start');
+  const corePath = path.resolve(__dirname, 'pgsql/dumps/miki-core.postgres');
+  spawnSync(`${PG_PATH}/bin/pg_restore`,
+            ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
+  console.log('** installCore end');
+}
+
 function updateConfigYml () {
   console.log('** updateConfigYml start');
 
   const configPath = path.resolve(__dirname + '/miki/config.yml');
-  const dataPath = path.resolve(`${MIMIX_APPDATA}/pgsql/data`);
+  const dataPath = path.resolve(PG_PATH, 'data');
 
   fs.readFile(configPath, 'utf8', (err, data) => {
     if (err) {
-      return console.log(err);
+      console.log(err);
     }
 
     var result = data.replace(/.\/data/g, dataPath);
 
     fs.writeFile(configPath, result, 'utf8', (err) => {
       if (err) {
-        return console.log(err);
+        console.log(err);
       }
     });
   });
@@ -122,6 +131,7 @@ function startPostgresWindows () {
     startDatabase();
     createDatabase();
     setupDatabase();
+    installCore();
   }
 }
 
