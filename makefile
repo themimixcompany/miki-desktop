@@ -20,5 +20,4 @@ TARBALL = ${HOME}/mimix/fkd/mkadm/dat/miki-desktop.tar.xz
 all: synchronize
 
 tarball:
-  rm -f $(TARBALL)
   tar -C .. -cJf $(TARBALL) --exclude=".git*" --exclude="node_modules" miki-desktop
