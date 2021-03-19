@@ -1,4 +1,4 @@
-const VERSION = '2.5.1';
+const VERSION = '2.5.2';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -10,6 +10,7 @@ const sleep = require('system-sleep');
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 80;
 const MIKIROOT = path.resolve(__dirname, 'miki');
+const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 var PG_PATH;
 const PG_HOST = 'localhost';
@@ -17,8 +18,6 @@ const PG_PORT = 5432;
 const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
-
-const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 let mainWindow;
 
@@ -104,7 +103,7 @@ function getValueByKey(text, key) {
 }
 
 function setupAccount () {
-  const configPath = path.resolve(__dirname, 'miki/config.yml');
+  const configPath = path.resolve(MIKIROOT, 'config.yml');
   let email;
   let password;
 
@@ -129,7 +128,7 @@ function setupAccount () {
 function updateConfigYml () {
   console.log('** updateConfigYml start');
 
-  const configPath = path.resolve(__dirname, 'miki/config.yml');
+  const configPath = path.resolve(MIKIROOT, 'config.yml');
   const dataPath = path.resolve(PG_PATH, 'data');
   var result;
 
