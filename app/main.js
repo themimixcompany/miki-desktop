@@ -1,4 +1,4 @@
-const VERSION = '2.5.6';
+const VERSION = '2.5.8';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -42,7 +42,7 @@ function installPostgres () {
     fs.mkdirSync(MIMIX_APPDATA);
 
     try {
-      fs.moveSync(sourcePath, destPath);
+      fs.copySync(sourcePath, destPath);
     } catch (err) {
       console.error(err);
     }
@@ -52,7 +52,7 @@ function installPostgres () {
 function updateConfigYml () {
   console.log('** updateConfigYml');
 
-  const configPath = path.resolve(MIKI_ROOT, 'config.yml');
+  const configPath = path.resolve(__dirname, 'miki/config.yml');
   const dataPath = path.resolve(PG_PATH, 'data');
   var result;
 
@@ -128,7 +128,7 @@ function getValueByKey(text, key) {
 function setupAccount () {
   console.log('** setupAccount');
 
-  const configPath = path.resolve(MIKI_ROOT, 'config.yml');
+  const configPath = path.resolve(__dirname, 'miki/config.yml');
   let email;
   let password;
 
