@@ -1,4 +1,4 @@
-const VERSION = '2.5.8';
+const VERSION = '2.6.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -47,28 +47,6 @@ function installPostgres () {
       console.error(err);
     }
   }
-}
-
-function updateConfigYml () {
-  console.log('** updateConfigYml');
-
-  const configPath = path.resolve(__dirname, 'miki/config.yml');
-  const dataPath = path.resolve(PG_PATH, 'data');
-  var result;
-
-  fs.readFile(configPath, 'utf8', (err, data) => {
-    if (err) {
-      console.log(err);
-    }
-
-    result = data.replace(/.\/data/g, dataPath);
-
-    fs.writeFile(configPath, result, 'utf8', (err) => {
-      if (err) {
-        console.log(err);
-      }
-    });
-  });
 }
 
 function initDatabase () {
@@ -128,7 +106,7 @@ function getValueByKey(text, key) {
 function setupAccount () {
   console.log('** setupAccount');
 
-  const configPath = path.resolve(__dirname, 'miki/config.yml');
+  const configPath = path.resolve(__dirname + '/miki/config.yml');
   let email;
   let password;
 
@@ -152,11 +130,9 @@ function startPostgresWindows () {
   PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
 
   if(fs.existsSync(`${PG_PATH}/data`)) {
-    updateConfigYml();
     startDatabase();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
-    updateConfigYml();
     installPostgres();
     initDatabase();
     startDatabase();
@@ -180,7 +156,7 @@ function startPostgres () {
 
 function startMiki () {
   process.chdir(MIKI_ROOT);
-  require(__dirname, 'miki/server/index.js');
+  require(__dirname + '/miki/server/index.js');
 }
 
 function createWindow () {
@@ -190,7 +166,7 @@ function createWindow () {
     center: true
   });
 
-  mainWindow.setMenuBarVisibility(true);
+  mainWindow.setMenuBarVisibility(false);
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
   mainWindow.maximize();
 
