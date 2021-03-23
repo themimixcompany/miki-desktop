@@ -22,14 +22,6 @@ const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 let mainWindow;
 
-function debug (error, stdout, stderr) {
-  if (error) {
-    console.error(`exec error: ${error}`);
-  }
-  console.log(`stdout: ${stdout}`);
-  console.error(`stderr: ${stderr}`);
-}
-
 function installPostgres () {
   console.log('** installPostgres');
 
@@ -196,8 +188,6 @@ function runApp () {
       sleep(5*1000);
       break outer;
     } else {
-      console.log(`postgresStat: ${postgresStat}`);
-      console.log(`mikiStat: ${mikiStat}`);
       sleep(1*1000);
     }
   }

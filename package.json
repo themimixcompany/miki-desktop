@@ -35,7 +35,7 @@
       "target": [
         "nsis"
       ],
-      "requestedExecutionLevel": "requireAdministrator",
+      "requestedExecutionLevel": "highestAvailable",
       "icon": "assets/icons/icon.ico"
     },
     "mac": {
