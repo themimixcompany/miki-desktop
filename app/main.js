@@ -1,4 +1,4 @@
-const VERSION = '2.6.0';
+const VERSION = '2.6.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -21,6 +21,7 @@ const MIKI_ROOT = path.resolve(__dirname, 'miki');
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 let mainWindow;
+let splashWindow;
 
 function installPostgres () {
   console.log('** installPostgres');
@@ -196,7 +197,41 @@ function runApp () {
 }
 
 function main () {
-  app.on('ready', runApp);
+  // app.on('ready', runApp);
+
+  app.on('ready', () => {
+    splashWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      transparent: true,
+      frame: false,
+      alwaysOnTop: true
+    });
+
+    mainWindow = new BrowserWindow({
+      titleBarStyle: 'hidden',
+      width: 1024,
+      height: 768,
+      center: true,
+      show: false
+    });
+
+    splashWindow.setMenuBarVisibility(false);
+    splashWindow.loadURL('https://mimix.io/png/art/art-le-marais.png');
+
+    mainWindow.setMenuBarVisibility(false);
+    mainWindow.loadURL(`http://${HOST}:${PORT}`);
+
+    mainWindow.once('ready-to-show', () => {
+      splashWindow.destroy();
+      mainWindow.show();
+      mainWindow.maximize();
+    });
+
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+  });
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
