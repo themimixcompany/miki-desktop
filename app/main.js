@@ -202,8 +202,8 @@ function startServers () {
       sleep(5*1000);
       break outer;
     } else {
-      console.log(`postgresStat: ${postgresStat}`);
-      console.log(`mikiStat: ${mikiStat}`);
+      console.log(`** postgresStat: ${postgresStat}`);
+      console.log(`** mikiStat: ${mikiStat}`);
       sleep(1*1000);
     }
   }
