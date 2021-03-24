@@ -1,4 +1,4 @@
-const VERSION = '2.6.1';
+const VERSION = '2.7.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -20,6 +20,8 @@ const PG_DATABASE = 'defaultdb';
 const MIKI_ROOT = path.resolve(__dirname, 'miki');
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
+let postgresStat;
+let mikiStat;
 let splashWindow;
 let mainWindow;
 
@@ -168,6 +170,18 @@ function createMainWindow () {
   });
 }
 
+function displayMainWindow () {
+  mainWindow.loadURL(`http://${HOST}:${PORT}`);
+}
+
+function handleWindows () {
+  mainWindow.on('ready-to-show', () => {
+    splashWindow.destroy();
+    mainWindow.maximize();
+    mainWindow.show();
+  });
+}
+
 function createSplashWindow () {
   splashWindow = new BrowserWindow({
     width: 300,
@@ -181,14 +195,12 @@ function createSplashWindow () {
   splashWindow.setMenuBarVisibility(false);
 }
 
-function startServers () {
-  let postgresStat;
-  let mikiStat;
+function displaySplashWindow () {
+  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+}
 
-  startPostgres();
-  startMiki();
-
-  outer:
+function checkPorts () {
+  loopBreak:
   while (true) {
     portscanner.checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
@@ -200,7 +212,7 @@ function startServers () {
 
     if (postgresStat == 'open' && mikiStat == 'open') {
       sleep(5*1000);
-      break outer;
+      break loopBreak;
     } else {
       console.log(`** postgresStat: ${postgresStat}`);
       console.log(`** mikiStat: ${mikiStat}`);
@@ -211,18 +223,17 @@ function startServers () {
 
 function startApp () {
   createSplashWindow();
-  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+  displaySplashWindow();
 
-  startServers();
+  startPostgres();
+  startMiki();
+
+  checkPorts();
 
   createMainWindow();
-  mainWindow.loadURL(`http://${HOST}:${PORT}`);
+  displayMainWindow();
 
-  mainWindow.on('ready-to-show', () => {
-    splashWindow.destroy();
-    mainWindow.maximize();
-    mainWindow.show();
-  });
+  handleWindows();
 }
 
 function main () {
