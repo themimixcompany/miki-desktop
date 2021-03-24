@@ -1,10 +1,10 @@
-const VERSION = '2.7.0';
+const VERSION = '2.7.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { execSync, spawn, spawnSync } = require('child_process');
 const fs = require('fs-extra');
-const portscanner = require('portscanner');
+const { checkPortStatus } = require('portscanner');
 const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
@@ -202,11 +202,11 @@ function displaySplashWindow () {
 function checkPorts () {
   loopBreak:
   while (true) {
-    portscanner.checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
+    checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
     });
 
-    portscanner.checkPortStatus(PORT, HOST, (error, status) => {
+    checkPortStatus(PORT, HOST, (error, status) => {
       mikiStat = status;
     });
 
