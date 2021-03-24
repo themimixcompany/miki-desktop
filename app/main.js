@@ -20,6 +20,7 @@ const PG_DATABASE = 'defaultdb';
 const MIKI_ROOT = path.resolve(__dirname, 'miki');
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
+let splashWindow;
 let mainWindow;
 
 function installPostgres () {
@@ -151,23 +152,36 @@ function startMiki () {
   require(__dirname + '/miki/server/index.js');
 }
 
-function createWindow () {
+function createMainWindow () {
   mainWindow = new BrowserWindow({
+    titleBarStyle: 'hidden',
     width: 1024,
     height: 768,
-    center: true
+    center: true,
+    show: false
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL(`http://${HOST}:${PORT}`);
-  mainWindow.maximize();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
-function runApp () {
+function createSplashWindow () {
+  splashWindow = new BrowserWindow({
+    width: 300,
+    height: 300,
+    frame: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    show: true
+  });
+
+  splashWindow.setMenuBarVisibility(false);
+}
+
+function startServers () {
   let postgresStat;
   let mikiStat;
 
@@ -188,22 +202,38 @@ function runApp () {
       sleep(5*1000);
       break outer;
     } else {
+      console.log(`postgresStat: ${postgresStat}`);
+      console.log(`mikiStat: ${mikiStat}`);
       sleep(1*1000);
     }
   }
+}
 
-  createWindow();
+function startApp () {
+  createSplashWindow();
+  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+
+  startServers();
+
+  createMainWindow();
+  mainWindow.loadURL(`http://${HOST}:${PORT}`);
+
+  mainWindow.on('ready-to-show', () => {
+    splashWindow.destroy();
+    mainWindow.maximize();
+    mainWindow.show();
+  });
 }
 
 function main () {
-  app.on('ready', runApp);
+  app.on('ready', startApp);
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
 
   app.on('activate', () => {
-    if (mainWindow === null) createWindow();
+    if (mainWindow === null) createMainWindow();
   });
 }
 
