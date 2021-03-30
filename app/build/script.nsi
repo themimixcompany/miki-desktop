@@ -1,5 +1,14 @@
 # script.nsi
-# v1.0.0
+# v1.2.0
+
+
+#---------------------------------------------------------------------------------------------------
+# Includes
+#---------------------------------------------------------------------------------------------------
+
+!include "MUI.nsh"
+!include "LogicLib.nsh"
+!include "${NSISDIR}\Contrib\Modern UI\System.nsh"
 
 
 #---------------------------------------------------------------------------------------------------
@@ -20,50 +29,57 @@
 # General
 #---------------------------------------------------------------------------------------------------
 
-!include "LogicLib.nsh"
-!include "${NSISDIR}\Contrib\Modern UI\System.nsh"
 
-!define MUI_PRODUCT "Miki Desktop"
+!define PRODUCT "Miki Desktop"
+!define VERSION "1.0.0"
+
 !define MUI_FILE "savefile"
-!define MUI_VERSION "1.0.0"
-!define MUI_BRANDINGTEXT "Miki Desktop"
-!define MUI_ICON "icon.ico"
-!define MUI_UNICON "icon.ico"
+!define MUI_BRANDINGTEXT "${PRODUCT}"
+!define MUI_ICON "..\..\assets\icons\icon.ico"
+!define MUI_UNICON "..\..\assets\icons\icon.ico"
 !define MUI_SPECIALBITMAP "Bitmap.bmp"
-
 !insertmacro MUI_LANGUAGE "English"
-!insertmacro MUI_SYSTEM
 
+OutFile "..\..\out\${PRODUCT} Setup ${VERSION}.exe"
 CRCCheck On
-OutFile "Miki Desktop Setup.exe"
 ShowInstDetails "nevershow"
 ShowUninstDetails "nevershow"
-InstallDir "$PROGRAMFILES\${MUI_PRODUCT}"
+InstallDir "$PROGRAMFILES\${PRODUCT}"
 
 
 #---------------------------------------------------------------------------------------------------
 # Installer
 #---------------------------------------------------------------------------------------------------
 
-Section "install" Installation info
-  CreateDirectory "${APPDATA}\Mimix"
-  SetOutPath "${APPDATA}\Mimix"
-  File /r "pgsql directory"
-  File /r "miki directory"
+Section "install" Installation
+  CreateDirectory "$APPDATA\Mimix"
+  SetOutPath "$APPDATA\Mimix"
+  File /r "..\pgsql"
+  File /r "..\miki"
 
-  SetOutPath "${INSTDIR}"
-  File /r "miki desktop directory"
+  CreateDirectory "$INSTDIR/app"
+  SetOutPath "$INSTDIR/app"
+  File "..\main.js"
+  File "..\renderer.js"
+  File "..\preload.js"
+  File /r "..\splash"
 
-  CreateShortCut "${DESKTOP}\${MUI_PRODUCT}.lnk" "${INSTDIR}\${MUI_FILE}.exe" ""
+  SetOutPath "$INSTDIR"
+  File /r "..\..\assets"
+  File /r "..\..\node_modules"
+  File "..\..\package.json"
+  File "..\..\package-lock.json"
 
-  CreateDirectory "${SMPROGRAMS}\${MUI_PRODUCT}"
-  CreateShortCut "${SMPROGRAMS}\${MUI_PRODUCT}\Uninstall.lnk" "${INSTDIR}\Uninstall.exe" "" "${INSTDIR}\Uninstall.exe" 0
-  CreateShortCut "${SMPROGRAMS}\${MUI_PRODUCT}\${MUI_PRODUCT}.lnk" "${INSTDIR}\${MUI_FILE}.exe" "" "${INSTDIR}\${MUI_FILE}.exe" 0
+  CreateShortCut "$DESKTOP\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_PRODUCT}" "DisplayName" "${MUI_PRODUCT} (remove only)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_PRODUCT}" "UninstallString" "${INSTDIR}\Uninstall.exe"
+  CreateDirectory "$SMPROGRAMS\${PRODUCT}"
+  CreateShortCut "$SMPROGRAMS\${PRODUCT}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
+  CreateShortCut "$SMPROGRAMS\${PRODUCT}\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" "" "$INSTDIR\${MUI_FILE}.exe" 0
 
-  WriteUninstaller "${INSTDIR}\Uninstall.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT} (remove only)"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "UninstallString" "$INSTDIR\Uninstall.exe"
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 
@@ -72,15 +88,15 @@ SectionEnd
 #---------------------------------------------------------------------------------------------------
 
 Section "Uninstall"
-  RMDir /r "${INSTDIR}\*.*"
-  RMDir "${INSTDIR}"
+  RMDir /r "$INSTDIR\*.*"
+  RMDir "$INSTDIR"
 
-  Delete "${DESKTOP}\${MUI_PRODUCT}.lnk"
-  Delete "${SMPROGRAMS}\${MUI_PRODUCT}\*.*"
-  RmDir  "${SMPROGRAMS}\${MUI_PRODUCT}"
+  Delete "$DESKTOP\${PRODUCT}.lnk"
+  Delete "$SMPROGRAMS\${PRODUCT}\*.*"
+  RmDir  "$SMPROGRAMS\${PRODUCT}"
 
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\${MUI_PRODUCT}"
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_PRODUCT}"
+  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\${PRODUCT}"
+  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}"
 SectionEnd
 
 
@@ -89,9 +105,9 @@ SectionEnd
 #---------------------------------------------------------------------------------------------------
 
 Function .onInstSuccess
-  MessageBox MB_OK "You have successfully installed ${MUI_PRODUCT}."
+  MessageBox MB_OK "You have successfully installed ${PRODUCT}."
 FunctionEnd
 
 Function un.onUninstSuccess
-  MessageBox MB_OK "You have successfully uninstalled ${MUI_PRODUCT}."
+  MessageBox MB_OK "You have successfully uninstalled ${PRODUCT}."
 FunctionEnd
