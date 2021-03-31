@@ -42,9 +42,17 @@
 
 OutFile "..\..\out\${PRODUCT} Setup ${VERSION}.exe"
 CRCCheck On
-ShowInstDetails "nevershow"
-ShowUninstDetails "nevershow"
-InstallDir "$PROGRAMFILES\${PRODUCT}"
+ShowInstDetails show
+ShowUninstDetails show
+InstallDir "$PROGRAMFILES64\${PRODUCT}"
+
+
+#---------------------------------------------------------------------------------------------------
+# Pages
+#---------------------------------------------------------------------------------------------------
+
+Page directory
+Page instfiles
 
 
 #---------------------------------------------------------------------------------------------------
