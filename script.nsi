@@ -1,5 +1,5 @@
 # script.nsi
-# v1.2.0
+# v1.2.1
 
 
 #---------------------------------------------------------------------------------------------------
@@ -33,14 +33,16 @@
 !define PRODUCT "Miki Desktop"
 !define VERSION "1.0.0"
 
+name "${PRODUCT} ${VERSION}"
+
 !define MUI_FILE "savefile"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
-!define MUI_ICON "..\..\assets\icons\icon.ico"
-!define MUI_UNICON "..\..\assets\icons\icon.ico"
+!define MUI_ICON "assets\icons\icon.ico"
+!define MUI_UNICON "assets\icons\icon.ico"
 !define MUI_SPECIALBITMAP "Bitmap.bmp"
 !insertmacro MUI_LANGUAGE "English"
 
-OutFile "..\..\out\${PRODUCT} Setup ${VERSION}.exe"
+OutFile "out\${PRODUCT} Setup ${VERSION}.exe"
 CRCCheck On
 ShowInstDetails show
 ShowUninstDetails show
@@ -62,21 +64,11 @@ Page instfiles
 Section "install" Installation
   CreateDirectory "$APPDATA\Mimix"
   SetOutPath "$APPDATA\Mimix"
-  File /r "..\pgsql"
-  File /r "..\miki"
-
-  CreateDirectory "$INSTDIR/app"
-  SetOutPath "$INSTDIR/app"
-  File "..\main.js"
-  File "..\renderer.js"
-  File "..\preload.js"
-  File /r "..\splash"
+  File /r "app\pgsql"
+  File /r "app\miki"
 
   SetOutPath "$INSTDIR"
-  File /r "..\..\assets"
-  File /r "..\..\node_modules"
-  File "..\..\package.json"
-  File "..\..\package-lock.json"
+  File /r "out\Miki Desktop-win32-x64\*.*"
 
   CreateShortCut "$DESKTOP\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
 

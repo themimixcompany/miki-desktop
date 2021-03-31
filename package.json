@@ -50,7 +50,7 @@
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "script": "build/script.nsi"
+      "script": "file:../../script.nsi"
     }
   },
   "dependencies": {
