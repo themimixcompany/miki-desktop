@@ -33,7 +33,7 @@
 !define PRODUCT "Miki Desktop"
 !define VERSION "1.0.0"
 
-name "${PRODUCT} ${VERSION}"
+name "${PRODUCT}"
 
 !define MUI_FILE "savefile"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
