@@ -21,7 +21,6 @@ const MIKI_ROOT = path.resolve(MIMIX_APPDATA, 'miki');
 
 let postgresStat;
 let mikiStat;
-let splashWindow;
 let mainWindow;
 
 function initDatabase () {
@@ -150,32 +149,11 @@ function createMainWindow () {
 }
 
 function displayMainWindow () {
-  mainWindow.loadURL(`http://${HOST}:${PORT}`);
-}
-
-function handleWindows () {
   mainWindow.on('ready-to-show', () => {
-    splashWindow.destroy();
+    mainWindow.loadURL(`http://${HOST}:${PORT}`);
     mainWindow.maximize();
     mainWindow.show();
   });
-}
-
-function createSplashWindow () {
-  splashWindow = new BrowserWindow({
-    width: 300,
-    height: 300,
-    frame: true,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    show: true
-  });
-
-  splashWindow.setMenuBarVisibility(false);
-}
-
-function displaySplashWindow () {
-  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
 }
 
 function checkPorts () {
@@ -201,9 +179,6 @@ function checkPorts () {
 }
 
 function startApp () {
-  createSplashWindow();
-  displaySplashWindow();
-
   startPostgres();
   startMiki();
 
@@ -211,8 +186,6 @@ function startApp () {
 
   createMainWindow();
   displayMainWindow();
-
-  handleWindows();
 }
 
 function main () {
