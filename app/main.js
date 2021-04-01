@@ -1,5 +1,4 @@
 const VERSION = '2.7.1';
-
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { execSync, spawn, spawnSync } = require('child_process');
@@ -17,32 +16,13 @@ const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
 
-const MIKI_ROOT = path.resolve(__dirname, 'miki');
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
+const MIKI_ROOT = path.resolve(MIMIX_APPDATA, 'miki');
 
 let postgresStat;
 let mikiStat;
 let splashWindow;
 let mainWindow;
-
-function installPostgres () {
-  console.log('** installPostgres');
-
-  const sourcePath = path.resolve(__dirname, 'pgsql/windows');
-  const destPath = PG_PATH;
-
-  if(fs.existsSync(destPath)) {
-    return true;
-  } else {
-    fs.mkdirSync(MIMIX_APPDATA);
-
-    try {
-      fs.copySync(sourcePath, destPath);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-}
 
 function initDatabase () {
   console.log('** initDatabase');
@@ -81,7 +61,7 @@ function setupDatabase () {
 function installCore () {
   console.log('** installCore');
 
-  const corePath = path.resolve(__dirname, 'pgsql/dumps/miki-core.postgres');
+  const corePath = path.resolve(`${PG_PATH}/dumps/miki-core.postgres`);
   spawnSync(`${PG_PATH}/bin/pg_restore`,
             ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
 }
@@ -101,7 +81,7 @@ function getValueByKey(text, key) {
 function setupAccount () {
   console.log('** setupAccount');
 
-  const configPath = path.resolve(__dirname + '/miki/config.yml');
+  const configPath = path.resolve(`${MIKI_ROOT}/miki/config.yml`);
   let email;
   let password;
 
@@ -128,7 +108,6 @@ function startPostgresWindows () {
     startDatabase();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
-    installPostgres();
     initDatabase();
     startDatabase();
     createDatabase();
@@ -151,7 +130,7 @@ function startPostgres () {
 
 function startMiki () {
   process.chdir(MIKI_ROOT);
-  require(__dirname + '/miki/server/index.js');
+  require(`${MIKI_ROOT}/miki/server/index.js`);
 }
 
 function createMainWindow () {

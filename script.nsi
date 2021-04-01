@@ -43,7 +43,7 @@ name "${PRODUCT}"
 !insertmacro MUI_LANGUAGE "English"
 
 OutFile "out\${PRODUCT} Setup ${VERSION}.exe"
-CRCCheck On
+CRCCheck on
 ShowInstDetails show
 ShowUninstDetails show
 InstallDir "$PROGRAMFILES64\${PRODUCT}"
