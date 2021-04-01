@@ -47,7 +47,8 @@
     "deb": {},
     "nsis": {
       "oneClick": false,
-      "perMachine": true
+      "perMachine": true,
+      "script": "file:../../script.nsi"
     }
   },
   "dependencies": {
