@@ -6,7 +6,7 @@
 # Includes
 #---------------------------------------------------------------------------------------------------
 
-!include "MUI.nsh"
+!include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
 
@@ -35,14 +35,15 @@
 
 name "${PRODUCT}"
 
-!define MUI_FILE "savefile"
+!define MUI_FILE "Miki Desktop"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
-!define MUI_ICON "assets\icons\icon.ico"
-!define MUI_UNICON "assets\icons\icon.ico"
-!define MUI_SPECIALBITMAP "Bitmap.bmp"
-!insertmacro MUI_LANGUAGE "English"
 
-OutFile "out\${PRODUCT} Setup ${VERSION}.exe"
+!define MUI_ICON "assets\icons\icon.ico"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "assets\icons\icon.bmp"
+!define MUI_HEADERIMAGE_RIGHT
+
+OutFile "out/${PRODUCT} Setup ${VERSION}.exe"
 CRCCheck on
 ShowInstDetails show
 ShowUninstDetails show
@@ -63,8 +64,12 @@ Page instfiles
 
 Section "install" Installation
   CreateDirectory "$APPDATA\Mimix"
+
+  CreateDirectory "$APPDATA\Mimix\pgsql"
+  SetOutPath "$APPDATA\Mimix\pgsql"
+  File /r "app\pgsql\windows\*.*"
+
   SetOutPath "$APPDATA\Mimix"
-  File /r "app\pgsql"
   File /r "app\miki"
 
   SetOutPath "$INSTDIR"
