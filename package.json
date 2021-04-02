@@ -48,7 +48,8 @@
     "nsis": {
       "oneClick": false,
       "perMachine": true,
-      "script": "file:../../script.nsi"
+      "script": "script.nsi",
+      "warningsAsErrors": false
     }
   },
   "dependencies": {
