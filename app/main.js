@@ -1,4 +1,4 @@
-const VERSION = '2.7.1';
+const VERSION = '2.8.0';
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { execSync, spawn, spawnSync } = require('child_process');
@@ -80,7 +80,7 @@ function getValueByKey(text, key) {
 function setupAccount () {
   console.log('** setupAccount');
 
-  const configPath = path.resolve(`${MIKI_ROOT}/miki/config.yml`);
+  const configPath = path.resolve(`${MIKI_ROOT}/config.yml`);
   let email;
   let password;
 
@@ -129,7 +129,7 @@ function startPostgres () {
 
 function startMiki () {
   process.chdir(MIKI_ROOT);
-  require(`${MIKI_ROOT}/miki/server/index.js`);
+  require(`${MIKI_ROOT}/server/index.js`);
 }
 
 function createMainWindow () {
