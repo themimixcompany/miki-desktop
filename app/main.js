@@ -1,16 +1,16 @@
-const VERSION = '2.6.1';
+const VERSION = '2.6.2';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { execSync, spawn, spawnSync } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const fs = require('fs-extra');
-const portscanner = require('portscanner');
+const { checkPortStatus } = require('portscanner');
 const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 80;
 
-var PG_PATH;
+var PG_ROOT;
 const PG_HOST = 'localhost';
 const PG_PORT = 5432;
 const PG_USER = 'doadmin';
@@ -27,15 +27,15 @@ let mikiStat;
 function initDatabase () {
   console.log('** initDatabase');
 
-  spawnSync(`${PG_PATH}/bin/initdb`,
-            ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
+  spawnSync(`${PG_ROOT}/bin/initdb`,
+            ['-U', PG_USER, '-A', 'trust', '-D', `${PG_ROOT}/data`]);
 }
 
 function startDatabase () {
   console.log('** startDatabase');
 
-  spawn(`${PG_PATH}/bin/pg_ctl`,
-        ['start', '-D', `${PG_PATH}/data`]);
+  spawn(`${PG_ROOT}/bin/pg_ctl`,
+        ['start', '-D', `${PG_ROOT}/data`]);
 
   sleep(5*1000);
 }
@@ -43,12 +43,12 @@ function startDatabase () {
 function createDatabase () {
   console.log('** createDatabase');
 
-  spawnSync(`${PG_PATH}/bin/createdb`,
+  spawnSync(`${PG_ROOT}/bin/createdb`,
             ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
 }
 
 function execSQL(statement) {
-  spawnSync(`${PG_PATH}/bin/psql`,
+  spawnSync(`${PG_ROOT}/bin/psql`,
             ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement]);
 }
 
@@ -63,7 +63,7 @@ function installCore () {
 
   const corePath = path.resolve(`${MIMIX_APPDATA}/pgdumps/miki-core.postgres`);
 
-  spawnSync(`${PG_PATH}/bin/pg_restore`,
+  spawnSync(`${PG_ROOT}/bin/pg_restore`,
             ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
 }
 
@@ -101,11 +101,11 @@ function setupAccount () {
 }
 
 function startPostgresWindows () {
-  console.log('** Starting Postgres for Windows...');
+  console.log('** Starting PostgreSQL...');
 
-  PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
+  PG_ROOT = path.resolve(`${MIMIX_APPDATA}/pgsql`);
 
-  if(fs.existsSync(`${PG_PATH}/data`)) {
+  if(fs.existsSync(`${PG_ROOT}/data`)) {
     startDatabase();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
@@ -130,6 +130,8 @@ function startPostgres () {
 }
 
 function startMiki () {
+  console.log('** Starting Miki...');
+
   process.chdir(MIKI_ROOT);
   require(`${MIKI_ROOT}/server/index.js`);
 }
@@ -156,11 +158,11 @@ function runApp () {
 
   outer:
   while (true) {
-    portscanner.checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
+    checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
     });
 
-    portscanner.checkPortStatus(PORT, HOST, (error, status) => {
+    checkPortStatus(PORT, HOST, (error, status) => {
       mikiStat = status;
     });
 
