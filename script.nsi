@@ -69,6 +69,10 @@ Section "install" Installation
   SetOutPath "$APPDATA\Mimix\pgsql"
   File /r "app\pgsql\windows\*.*"
 
+  CreateDirectory "$APPDATA\Mimix\pgdumps"
+  SetOutPath "$APPDATA\Mimix\pgdumps"
+  File /r "app\pgdumps\*.*"
+
   SetOutPath "$APPDATA\Mimix"
   File /r "app\miki"
 

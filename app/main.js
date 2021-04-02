@@ -1,9 +1,10 @@
-const VERSION = '2.8.0';
+const VERSION = '2.6.1';
+
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { execSync, spawn, spawnSync } = require('child_process');
 const fs = require('fs-extra');
-const { checkPortStatus } = require('portscanner');
+const portscanner = require('portscanner');
 const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
@@ -19,9 +20,9 @@ const PG_DATABASE = 'defaultdb';
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 const MIKI_ROOT = path.resolve(MIMIX_APPDATA, 'miki');
 
+let mainWindow;
 let postgresStat;
 let mikiStat;
-let mainWindow;
 
 function initDatabase () {
   console.log('** initDatabase');
@@ -60,7 +61,8 @@ function setupDatabase () {
 function installCore () {
   console.log('** installCore');
 
-  const corePath = path.resolve(`${PG_PATH}/dumps/miki-core.postgres`);
+  const corePath = path.resolve(`${MIMIX_APPDATA}/pgdumps/miki-core.postgres`);
+
   spawnSync(`${PG_PATH}/bin/pg_restore`,
             ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
 }
@@ -132,71 +134,56 @@ function startMiki () {
   require(`${MIKI_ROOT}/server/index.js`);
 }
 
-function createMainWindow () {
+function createWindow () {
   mainWindow = new BrowserWindow({
-    titleBarStyle: 'hidden',
     width: 1024,
     height: 768,
-    center: true,
-    show: false
+    center: true
   });
 
   mainWindow.setMenuBarVisibility(false);
+  mainWindow.loadURL(`http://${HOST}:${PORT}`);
+  mainWindow.maximize();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
-function displayMainWindow () {
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.loadURL(`http://${HOST}:${PORT}`);
-    mainWindow.maximize();
-    mainWindow.show();
-  });
-}
+function runApp () {
+  startPostgres();
+  startMiki();
 
-function checkPorts () {
-  loopBreak:
+  outer:
   while (true) {
-    checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
+    portscanner.checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
     });
 
-    checkPortStatus(PORT, HOST, (error, status) => {
+    portscanner.checkPortStatus(PORT, HOST, (error, status) => {
       mikiStat = status;
     });
 
     if (postgresStat == 'open' && mikiStat == 'open') {
       sleep(5*1000);
-      break loopBreak;
+      break outer;
     } else {
-      console.log(`** postgresStat: ${postgresStat}`);
-      console.log(`** mikiStat: ${mikiStat}`);
       sleep(1*1000);
     }
   }
-}
 
-function startApp () {
-  startPostgres();
-  startMiki();
-
-  checkPorts();
-
-  createMainWindow();
-  displayMainWindow();
+  createWindow();
 }
 
 function main () {
-  app.on('ready', startApp);
+  app.on('ready', runApp);
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
 
   app.on('activate', () => {
-    if (mainWindow === null) createMainWindow();
+    if (mainWindow === null) createWindow();
   });
 }
 
