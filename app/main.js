@@ -1,4 +1,4 @@
-const VERSION = '2.6.2';
+const VERSION = '2.7.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -17,8 +17,8 @@ const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
 
+var MIKI_ROOT;
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
-const MIKI_ROOT = path.resolve(MIMIX_APPDATA, 'miki');
 
 let mainWindow;
 let postgresStat;
@@ -100,11 +100,7 @@ function setupAccount () {
   });
 }
 
-function startPostgresWindows () {
-  console.log('** Starting PostgreSQL...');
-
-  PG_ROOT = path.resolve(`${MIMIX_APPDATA}/pgsql`);
-
+function handleStartPostgres () {
   if(fs.existsSync(`${PG_ROOT}/data`)) {
     startDatabase();
   } else {
@@ -119,9 +115,17 @@ function startPostgresWindows () {
 }
 
 function startPostgres () {
+  console.log('** Starting PostgreSQL...');
+
   switch(process.platform) {
   case 'win32':
-    startPostgresWindows();
+    PG_ROOT = path.resolve(`${MIMIX_APPDATA}/pgsql`);
+    MIKI_ROOT = path.resolve(`${MIMIX_APPDATA}/miki`);
+
+    handleStartPostgres();
+    break;
+  case 'darwin':
+    return true;
     break;
   default:
     console.log(`The platform ${process.platform} is unsupported. Aborting.`);
