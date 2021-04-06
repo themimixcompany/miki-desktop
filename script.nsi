@@ -6,23 +6,10 @@
 # Includes
 #---------------------------------------------------------------------------------------------------
 
-!include "MUI2.nsh"
+; !include "MUI2.nsh"
+!include "MUI.nsh"
 !include "LogicLib.nsh"
 !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
-
-
-#---------------------------------------------------------------------------------------------------
-# Modern UI
-#---------------------------------------------------------------------------------------------------
-
-
-!define MUI_WELCOMEPAGE
-!define MUI_LICENSEPAGE
-!define MUI_DIRECTORYPAGE
-!define MUI_ABORTWARNING
-!define MUI_UNINSTALLER
-!define MUI_UNCONFIRMPAGE
-!define MUI_FINISHPAGE
 
 
 #---------------------------------------------------------------------------------------------------
@@ -32,21 +19,20 @@
 
 !define PRODUCT "Miki Desktop"
 !define VERSION "1.0.0"
-
 name "${PRODUCT}"
 
 !define MUI_FILE "Miki Desktop"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
 
-!define MUI_ICON "assets\icons\icon.ico"
+!define MUI_ICON "icon.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "assets\icons\icon.bmp"
+!define MUI_HEADERIMAGE_BITMAP "icon.bmp"
 !define MUI_HEADERIMAGE_RIGHT
 
 OutFile "out/${PRODUCT} Setup ${VERSION}.exe"
 CRCCheck on
-ShowInstDetails show
-ShowUninstDetails show
+ShowInstDetails nevershow
+ShowUninstDetails nevershow
 InstallDir "$PROGRAMFILES64\${PRODUCT}"
 
 
@@ -54,8 +40,30 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 # Pages
 #---------------------------------------------------------------------------------------------------
 
-Page directory
-Page instfiles
+
+!define WELCOME_TITLE 'Welcome to the Miki Desktop installer!'
+!define FINISH_TITLE 'Miki Desktop has finished installing!'
+!define UNWELCOME_TITLE 'Welcome to the Miki Desktop uninstaller!'
+!define UNFINISH_TITLE 'Miki Desktop has finished uninstalling!'
+
+!define MUI_WELCOMEPAGE_TITLE '${WELCOME_TITLE}'
+!define MUI_WELCOMEPAGE_TITLE_3LINES
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!define MUI_FINISHPAGE_TITLE '${FINISH_TITLE}'
+!define MUI_FINISHPAGE_TITLE_3LINES
+!insertmacro MUI_PAGE_FINISH
+
+!define MUI_WELCOMEPAGE_TITLE  '${UNWELCOME_TITLE}'
+!define MUI_WELCOMEPAGE_TITLE_3LINES
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_INSTFILES
+!define MUI_FINISHPAGE_TITLE '${UNFINISH_TITLE}'
+!define MUI_FINISHPAGE_TITLE_3LINES
+!insertmacro MUI_UNPAGE_FINISH
+
+!insertmacro MUI_LANGUAGE "English"
 
 
 #---------------------------------------------------------------------------------------------------
