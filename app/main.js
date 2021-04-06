@@ -10,15 +10,17 @@ const sleep = require('system-sleep');
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 80;
 
-var PG_ROOT;
+var PG_PATH;
 const PG_HOST = 'localhost';
 const PG_PORT = 5432;
 const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
 
-var MIKI_ROOT;
+var MIKI_PATH;
 const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
+
+var CORE_PATH;
 
 let mainWindow;
 let postgresStat;
@@ -27,15 +29,15 @@ let mikiStat;
 function initDatabase () {
   console.log('** initDatabase');
 
-  spawnSync(`${PG_ROOT}/bin/initdb`,
-            ['-U', PG_USER, '-A', 'trust', '-D', `${PG_ROOT}/data`]);
+  spawnSync(`${PG_PATH}/bin/initdb`,
+            ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
 }
 
 function startDatabase () {
   console.log('** startDatabase');
 
-  spawn(`${PG_ROOT}/bin/pg_ctl`,
-        ['start', '-D', `${PG_ROOT}/data`]);
+  spawn(`${PG_PATH}/bin/pg_ctl`,
+        ['start', '-D', `${PG_PATH}/data`]);
 
   sleep(5*1000);
 }
@@ -43,12 +45,12 @@ function startDatabase () {
 function createDatabase () {
   console.log('** createDatabase');
 
-  spawnSync(`${PG_ROOT}/bin/createdb`,
+  spawnSync(`${PG_PATH}/bin/createdb`,
             ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, PG_DATABASE]);
 }
 
 function execSQL(statement) {
-  spawnSync(`${PG_ROOT}/bin/psql`,
+  spawnSync(`${PG_PATH}/bin/psql`,
             ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement]);
 }
 
@@ -61,10 +63,8 @@ function setupDatabase () {
 function installCore () {
   console.log('** installCore');
 
-  const corePath = path.resolve(`${MIMIX_APPDATA}/pgdumps/miki-core.postgres`);
-
-  spawnSync(`${PG_ROOT}/bin/pg_restore`,
-            ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, corePath]);
+  spawnSync(`${PG_PATH}/bin/pg_restore`,
+            ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, CORE_PATH]);
 }
 
 function getValueByKey(text, key) {
@@ -82,7 +82,7 @@ function getValueByKey(text, key) {
 function setupAccount () {
   console.log('** setupAccount');
 
-  const configPath = path.resolve(`${MIKI_ROOT}/config.yml`);
+  const configPath = path.resolve(`${MIKI_PATH}/config.yml`);
   let email;
   let password;
 
@@ -101,7 +101,9 @@ function setupAccount () {
 }
 
 function handleStartPostgres () {
-  if(fs.existsSync(`${PG_ROOT}/data`)) {
+  console.log('** handelStartPostgres');
+
+  if(fs.existsSync(`${PG_PATH}/data`)) {
     startDatabase();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
@@ -119,13 +121,16 @@ function startPostgres () {
 
   switch(process.platform) {
   case 'win32':
-    PG_ROOT = path.resolve(`${MIMIX_APPDATA}/pgsql`);
-    MIKI_ROOT = path.resolve(`${MIMIX_APPDATA}/miki`);
-
+    PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
+    MIKI_PATH = path.resolve(`${MIMIX_APPDATA}/miki`);
+    CORE_PATH = path.resolve(`${MIMIX_APPDATA}/pgdumps/miki-core.postgres`);
     handleStartPostgres();
     break;
   case 'darwin':
-    return true;
+    PG_PATH = path.resolve(__dirname, 'pgsql');
+    MIKI_PATH = path.resolve(__dirname, 'miki');
+    CORE_PATH = path.resolve(__dirname, 'pgdumps/miki-core.postgres');
+    handleStartPostgres();
     break;
   default:
     console.log(`The platform ${process.platform} is unsupported. Aborting.`);
@@ -136,8 +141,8 @@ function startPostgres () {
 function startMiki () {
   console.log('** Starting Miki...');
 
-  process.chdir(MIKI_ROOT);
-  require(`${MIKI_ROOT}/server/index.js`);
+  process.chdir(MIKI_PATH);
+  require(`${MIKI_PATH}/server/index.js`);
 }
 
 function createWindow () {
