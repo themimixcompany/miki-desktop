@@ -6,7 +6,6 @@
 # Includes
 #---------------------------------------------------------------------------------------------------
 
-; !include "MUI2.nsh"
 !include "MUI.nsh"
 !include "LogicLib.nsh"
 !include "${NSISDIR}\Contrib\Modern UI\System.nsh"
@@ -19,9 +18,11 @@
 
 !define PRODUCT "Miki Desktop"
 !define VERSION "1.0.0"
-name "${PRODUCT}"
 
-!define MUI_FILE "Miki Desktop"
+Name "${PRODUCT}"
+BrandingText "${PRODUCT} Installer ${VERSION}"
+
+!define MUI_FILE "${PRODUCT}"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
 
 !define MUI_ICON "icon.ico"
@@ -40,6 +41,7 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 # Pages
 #---------------------------------------------------------------------------------------------------
 
+!define MUI_WELCOMEPAGE_TEXT 'We’re ready to setup Miki Desktop on your computer.\r\nClick Next to continue.'
 
 !define WELCOME_TITLE 'Welcome to the Miki Desktop installer!'
 !define FINISH_TITLE 'Miki Desktop has finished installing!'
