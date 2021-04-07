@@ -1,5 +1,5 @@
 # script.nsi
-# v1.3.0
+# v1.3.1
 
 
 #---------------------------------------------------------------------------------------------------
@@ -51,9 +51,10 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-#!define MUI_FINISHPAGE_TITLE '${FINISH_TITLE}'
-#!define MUI_FINISHPAGE_TITLE_3LINES
-#!insertmacro MUI_PAGE_FINISH
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT}"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
+!insertmacro MUI_PAGE_FINISH
 
 !define MUI_WELCOMEPAGE_TITLE  '${UNWELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
@@ -62,11 +63,6 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 !define MUI_FINISHPAGE_TITLE '${UNFINISH_TITLE}'
 !define MUI_FINISHPAGE_TITLE_3LINES
 !insertmacro MUI_UNPAGE_FINISH
-
-!define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT}"
-!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
-!insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_LANGUAGE "English"
 
