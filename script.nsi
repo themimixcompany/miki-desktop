@@ -37,7 +37,7 @@ CRCCheck on
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 InstallDir "$PROGRAMFILES64\${PRODUCT}"
-#AutoCloseWindow true
+AutoCloseWindow false
 
 
 #---------------------------------------------------------------------------------------------------
