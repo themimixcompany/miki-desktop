@@ -1,5 +1,5 @@
 # script.nsi
-# v1.3.1
+# v1.4.0
 
 
 #---------------------------------------------------------------------------------------------------
@@ -21,13 +21,15 @@
 
 Name "${PRODUCT}"
 BrandingText "${PRODUCT} Installer ${VERSION}"
+Caption "${PRODUCT} Installer"
 
 !define MUI_FILE "${PRODUCT}"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
 
-!define MUI_ICON "icon.ico"
+!define MUI_ICON "nsis\icon.ico"
+!define MUI_UNICON "nsis\icon.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "icon.bmp"
+!define MUI_HEADERIMAGE_BITMAP "nsis\icon.bmp"
 !define MUI_HEADERIMAGE_RIGHT
 
 OutFile "out/${PRODUCT} Setup ${VERSION}.exe"
@@ -41,15 +43,17 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 # Pages
 #---------------------------------------------------------------------------------------------------
 
-!define MUI_WELCOMEPAGE_TEXT 'We’re ready to setup Miki Desktop on your computer.\r\nClick Next to continue.'
+!define MUI_WELCOMEFINISHPAGE_BITMAP "nsis\install.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "nsis\uninstall.bmp"
 
-!define WELCOME_TITLE 'Welcome to the Miki Desktop installer!'
-!define FINISH_TITLE 'Miki Desktop has finished installing!'
-!define UNWELCOME_TITLE 'Welcome to the Miki Desktop uninstaller!'
-!define UNFINISH_TITLE 'Miki Desktop has finished uninstalling!'
+!define WELCOME_TITLE 'Welcome to the Miki Desktop Installer.'
+!define FINISH_TITLE 'Miki Desktop has finished installing.'
+!define UNWELCOME_TITLE 'Welcome to the Miki Desktop Uninstaller.'
+!define UNFINISH_TITLE 'Miki Desktop has finished uninstalling.'
 
 !define MUI_WELCOMEPAGE_TITLE '${WELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
+!define MUI_WELCOMEPAGE_TEXT 'We’re ready to setup Miki Desktop on your computer.\r\nClick Next to continue.'
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -58,7 +62,7 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 !insertmacro MUI_PAGE_FINISH
 
-!define MUI_WELCOMEPAGE_TITLE  '${UNWELCOME_TITLE}'
+!define MUI_WELCOMEPAGE_TITLE '${UNWELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -96,7 +100,7 @@ Section "install" Installation
   CreateShortCut "$SMPROGRAMS\${PRODUCT}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\${PRODUCT}\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" "" "$INSTDIR\${MUI_FILE}.exe" 0
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT} (remove only)"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "UninstallString" "$INSTDIR\Uninstall.exe"
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
