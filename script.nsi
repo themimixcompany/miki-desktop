@@ -1,5 +1,5 @@
 # script.nsi
-# v1.4.0
+# v1.5.0
 
 
 #---------------------------------------------------------------------------------------------------
@@ -37,6 +37,7 @@ CRCCheck on
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 InstallDir "$PROGRAMFILES64\${PRODUCT}"
+#AutoCloseWindow true
 
 
 #---------------------------------------------------------------------------------------------------
@@ -53,10 +54,11 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 
 !define MUI_WELCOMEPAGE_TITLE '${WELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
-!define MUI_WELCOMEPAGE_TEXT 'We’re ready to setup Miki Desktop on your computer.\r\nClick Next to continue.'
+!define MUI_WELCOMEPAGE_TEXT "We're ready to setup Miki Desktop on your computer.\r\n\r\nClick Next to continue."
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_FINISHPAGE_TEXT "Miki Desktop is installed.\r\n\r\nClick Finish to close the installer."
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT}"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
@@ -78,6 +80,8 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 #---------------------------------------------------------------------------------------------------
 
 Section "install" Installation
+  Call KillPostgres
+
   CreateDirectory "$APPDATA\Mimix"
 
   CreateDirectory "$APPDATA\Mimix\pgsql"
@@ -112,6 +116,8 @@ SectionEnd
 #---------------------------------------------------------------------------------------------------
 
 Section "Uninstall"
+  Call KillPostgres
+
   RMDir /r "$INSTDIR\*.*"
   RMDir "$INSTDIR"
 
@@ -128,14 +134,17 @@ SectionEnd
 # Functions
 #---------------------------------------------------------------------------------------------------
 
-Function .onInstSuccess
-  MessageBox MB_OK "You have successfully installed ${PRODUCT}."
-FunctionEnd
-
-Function un.onUninstSuccess
-  MessageBox MB_OK "You have successfully uninstalled ${PRODUCT}."
-FunctionEnd
-
 Function LaunchLink
   ExecShell "" "$SMPROGRAMS\${PRODUCT}\${PRODUCT}.lnk"
+FunctionEnd
+
+Function KillPostgres
+  StrCpy $1 "postgres.exe"
+  nsProcess::_FindProcess "$1"
+  Pop $R0
+  ${If} $R0 = 0
+    nsProcess::_KillProcess "$1"
+    Pop $R0
+    Sleep 500
+  ${EndIf}
 FunctionEnd
