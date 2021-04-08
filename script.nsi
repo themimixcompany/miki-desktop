@@ -1,5 +1,5 @@
 # script.nsi
-# v1.5.0
+# v1.5.1
 
 
 #---------------------------------------------------------------------------------------------------
@@ -51,14 +51,16 @@ InstallDir "$PROGRAMFILES64\${PRODUCT}"
 !define FINISH_TITLE 'Miki Desktop has finished installing.'
 !define UNWELCOME_TITLE 'Welcome to the Miki Desktop Uninstaller.'
 !define UNFINISH_TITLE 'Miki Desktop has finished uninstalling.'
+!define WELCOME_TEXT "We're ready to setup Miki Desktop on your computer.\r\n\r\nClick Next to continue."
+!define FINISH_TEXT "Miki Desktop is installed.\r\n\r\nClick Finish to close the installer."
 
 !define MUI_WELCOMEPAGE_TITLE '${WELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
-!define MUI_WELCOMEPAGE_TEXT "We're ready to setup Miki Desktop on your computer.\r\n\r\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TEXT '${WELCOME_TEXT}'
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_FINISHPAGE_TEXT "Miki Desktop is installed.\r\n\r\nClick Finish to close the installer."
+!define MUI_FINISHPAGE_TEXT '${FINISH_TEXT}'
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT}"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
@@ -116,8 +118,6 @@ SectionEnd
 #---------------------------------------------------------------------------------------------------
 
 Section "Uninstall"
-  Call KillPostgres
-
   RMDir /r "$INSTDIR\*.*"
   RMDir "$INSTDIR"
 
