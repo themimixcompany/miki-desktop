@@ -30,6 +30,7 @@
 Name "${PRODUCT}"
 BrandingText "${PRODUCT} Installer ${VERSION}"
 Caption "${PRODUCT} Installer"
+UninstallCaption "${PRODUCT} Uninstaller"
 
 !define MUI_FILE "${PRODUCT}"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
@@ -62,7 +63,7 @@ AutoCloseWindow false
 
 !define MUI_WELCOMEPAGE_TITLE '${WELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
-!define MUI_WELCOMEPAGE_TEXT "We're ready to setup Miki Desktop on your computer.\r\n\r\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TEXT "We're ready to install Miki Desktop on your computer.\r\n\r\nClick Next to continue."
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -74,6 +75,7 @@ AutoCloseWindow false
 
 !define MUI_WELCOMEPAGE_TITLE '${UNWELCOME_TITLE}'
 !define MUI_WELCOMEPAGE_TITLE_3LINES
+!define MUI_WELCOMEPAGE_TEXT "We're ready to uninstall Miki Desktop.\r\n\r\nClick Uninstall to start the uninstallation."
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_INSTFILES
 !define MUI_FINISHPAGE_TITLE '${UNFINISH_TITLE}'

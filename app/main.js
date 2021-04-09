@@ -1,4 +1,4 @@
-const VERSION = '2.7.0';
+const VERSION = '2.8.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -22,9 +22,12 @@ const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 var CORE_PATH;
 
+let splashWindow;
 let mainWindow;
 let postgresStat;
 let mikiStat;
+
+let loadingScreen;
 
 function initDatabase () {
   console.log('** initDatabase');
@@ -101,7 +104,7 @@ function setupAccount () {
 }
 
 function handleStartPostgres () {
-  console.log('** handelStartPostgres');
+  console.log('** handleStartPostgres');
 
   if(fs.existsSync(`${PG_PATH}/data`)) {
     startDatabase();
@@ -117,7 +120,7 @@ function handleStartPostgres () {
 }
 
 function startPostgres () {
-  console.log('** Starting PostgreSQL...');
+  console.log('** startPostgres');
 
   switch(process.platform) {
   case 'win32':
@@ -139,33 +142,86 @@ function startPostgres () {
 }
 
 function startMiki () {
-  console.log('** Starting Miki...');
+  console.log('** startMiki');
 
   process.chdir(MIKI_PATH);
   require(`${MIKI_PATH}/server/index.js`);
 }
 
-function createWindow () {
+function createSplashWindow () {
+  splashWindow = new BrowserWindow({
+    width: 300,
+    height: 300,
+    frame: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    show: false,
+    titleBarStyle: 'hidden'
+  });
+
+  splashWindow.setMenuBarVisibility(false);
+
+  splashWindow.on('closed', () => {
+    splashWindow = null;
+  });
+}
+
+function displaySplashWindow () {
+  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+  splashWindow.show();
+
+  // splashWindow.webContents.on('did-finish-load', () => {
+  //   splashWindow.show();
+  // });
+
+  splashWindow.on('ready-to-show', () => {
+    splashWindow.show();
+  });
+}
+
+function createMainWindow () {
   mainWindow = new BrowserWindow({
+    titleBarStyle: 'hidden',
     width: 1024,
     height: 768,
-    center: true
+    center: true,
+    show: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadURL(`http://${HOST}:${PORT}`);
-  mainWindow.maximize();
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (loadingScreen) {
+      loadingScreen.close();
+    }
+    mainWindow.show();
+  });
 }
 
-function runApp () {
-  startPostgres();
-  startMiki();
+function displayMainWindow () {
+  mainWindow.loadURL(`http://${HOST}:${PORT}`);
 
-  outer:
+  mainWindow.on('ready-to-show', () => {
+    // splashWindow.destroy();
+    mainWindow.maximize();
+    mainWindow.show();
+  });
+}
+
+function displayPortStatus () {
+  console.log(`** postgresStat: ${postgresStat}`);
+  console.log(`** mikiStat: ${mikiStat}`);
+}
+
+function checkPorts () {
+  loopBreak:
   while (true) {
     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
@@ -176,25 +232,59 @@ function runApp () {
     });
 
     if (postgresStat == 'open' && mikiStat == 'open') {
+      displayPortStatus();
       sleep(5*1000);
-      break outer;
+      break loopBreak;
     } else {
+      displayPortStatus();
       sleep(1*1000);
     }
   }
+}
 
-  createWindow();
+const createLoadingScreen = () => {
+  loadingScreen = new BrowserWindow(
+    Object.assign({
+      width: 300,
+      height: 300,
+      frame: false,
+      transparent: true,
+      show: true
+    })
+  );
+
+  loadingScreen.setResizable(false);
+  loadingScreen.loadURL(`file://${__dirname}/splash/index.html`);
+  loadingScreen.on('closed', () => { loadingScreen = null; });
+  loadingScreen.webContents.on('did-finish-load', () => {
+    loadingScreen.show();
+  });
+};
+
+function startApp () {
+  // createSplashWindow();
+  // displaySplashWindow();
+
+  createLoadingScreen();
+
+  startPostgres();
+  startMiki();
+
+  checkPorts();
+
+  createMainWindow();
+  displayMainWindow();
 }
 
 function main () {
-  app.on('ready', runApp);
+  app.on('ready', startApp);
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
 
   app.on('activate', () => {
-    if (mainWindow === null) createWindow();
+    if (mainWindow === null) createMainWindow();
   });
 }
 
