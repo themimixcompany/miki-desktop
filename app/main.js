@@ -1,4 +1,4 @@
-const VERSION = '2.8.0';
+const VERSION = '2.8.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -22,7 +22,6 @@ const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 var CORE_PATH;
 
-let splashWindow;
 let mainWindow;
 let postgresStat;
 let mikiStat;
@@ -148,37 +147,6 @@ function startMiki () {
   require(`${MIKI_PATH}/server/index.js`);
 }
 
-function createSplashWindow () {
-  splashWindow = new BrowserWindow({
-    width: 300,
-    height: 300,
-    frame: true,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    show: false,
-    titleBarStyle: 'hidden'
-  });
-
-  splashWindow.setMenuBarVisibility(false);
-
-  splashWindow.on('closed', () => {
-    splashWindow = null;
-  });
-}
-
-function displaySplashWindow () {
-  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
-  splashWindow.show();
-
-  // splashWindow.webContents.on('did-finish-load', () => {
-  //   splashWindow.show();
-  // });
-
-  splashWindow.on('ready-to-show', () => {
-    splashWindow.show();
-  });
-}
-
 function createMainWindow () {
   mainWindow = new BrowserWindow({
     titleBarStyle: 'hidden',
@@ -262,9 +230,6 @@ const createLoadingScreen = () => {
 };
 
 function startApp () {
-  // createSplashWindow();
-  // displaySplashWindow();
-
   createLoadingScreen();
 
   startPostgres();
