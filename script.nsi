@@ -12,6 +12,14 @@
 
 
 #---------------------------------------------------------------------------------------------------
+# Plugins
+#---------------------------------------------------------------------------------------------------
+
+!addplugindir "nsis\plugin"
+!include "nsis\include\nsProcess.nsh"
+
+
+#---------------------------------------------------------------------------------------------------
 # General
 #---------------------------------------------------------------------------------------------------
 
@@ -26,10 +34,10 @@ Caption "${PRODUCT} Installer"
 !define MUI_FILE "${PRODUCT}"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
 
-!define MUI_ICON "nsis\icon.ico"
-!define MUI_UNICON "nsis\icon.ico"
+!define MUI_ICON "nsis\images\icon.ico"
+!define MUI_UNICON "nsis\images\icon.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "nsis\icon.bmp"
+!define MUI_HEADERIMAGE_BITMAP "nsis\images\icon.bmp"
 !define MUI_HEADERIMAGE_RIGHT
 
 OutFile "out/${PRODUCT} Setup ${VERSION}.exe"
@@ -44,8 +52,8 @@ AutoCloseWindow false
 # Pages
 #---------------------------------------------------------------------------------------------------
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "nsis\install.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "nsis\uninstall.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "nsis\images\install.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "nsis\images\uninstall.bmp"
 
 !define WELCOME_TITLE 'Welcome to the Miki Desktop Installer.'
 !define FINISH_TITLE 'Miki Desktop has finished installing.'
