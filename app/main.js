@@ -22,11 +22,10 @@ const MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
 
 var CORE_PATH;
 
+let splashWindow;
 let mainWindow;
 let postgresStat;
 let mikiStat;
-
-let loadingScreen;
 
 function initDatabase () {
   console.log('** initDatabase');
@@ -147,6 +146,25 @@ function startMiki () {
   require(`${MIKI_PATH}/server/index.js`);
 }
 
+const createSplashWindow = () => {
+  splashWindow = new BrowserWindow(
+    Object.assign({
+      width: 300,
+      height: 300,
+      frame: false,
+      transparent: true,
+      show: true
+    })
+  );
+
+  splashWindow.setResizable(false);
+  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+  splashWindow.on('closed', () => { splashWindow = null; });
+  splashWindow.webContents.on('did-finish-load', () => {
+    splashWindow.show();
+  });
+};
+
 function createMainWindow () {
   mainWindow = new BrowserWindow({
     titleBarStyle: 'hidden',
@@ -166,9 +184,6 @@ function createMainWindow () {
   });
 
   mainWindow.webContents.on('did-finish-load', () => {
-    if (loadingScreen) {
-      loadingScreen.close();
-    }
     mainWindow.show();
   });
 }
@@ -177,7 +192,6 @@ function displayMainWindow () {
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
 
   mainWindow.on('ready-to-show', () => {
-    // splashWindow.destroy();
     mainWindow.maximize();
     mainWindow.show();
   });
@@ -210,33 +224,11 @@ function checkPorts () {
   }
 }
 
-const createLoadingScreen = () => {
-  loadingScreen = new BrowserWindow(
-    Object.assign({
-      width: 300,
-      height: 300,
-      frame: false,
-      transparent: true,
-      show: true
-    })
-  );
-
-  loadingScreen.setResizable(false);
-  loadingScreen.loadURL(`file://${__dirname}/splash/index.html`);
-  loadingScreen.on('closed', () => { loadingScreen = null; });
-  loadingScreen.webContents.on('did-finish-load', () => {
-    loadingScreen.show();
-  });
-};
-
 function startApp () {
-  createLoadingScreen();
-
+  createSplashWindow();
   startPostgres();
   startMiki();
-
   checkPorts();
-
   createMainWindow();
   displayMainWindow();
 }
