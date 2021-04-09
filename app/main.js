@@ -1,4 +1,4 @@
-const VERSION = '2.8.1';
+const VERSION = '2.8.2';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -152,8 +152,7 @@ const createSplashWindow = () => {
       width: 300,
       height: 300,
       frame: false,
-      transparent: true,
-      show: true
+      transparent: true
     })
   );
 
@@ -192,6 +191,7 @@ function displayMainWindow () {
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
 
   mainWindow.on('ready-to-show', () => {
+    splashWindow.destroy();
     mainWindow.maximize();
     mainWindow.show();
   });
