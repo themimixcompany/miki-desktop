@@ -147,18 +147,18 @@ function startMiki () {
 }
 
 const createSplashWindow = () => {
-  splashWindow = new BrowserWindow(
-    Object.assign({
+  splashWindow = new BrowserWindow({
       width: 300,
       height: 300,
       frame: false,
       transparent: true
-    })
-  );
+  });
 
   splashWindow.setResizable(false);
   splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
-  splashWindow.on('closed', () => { splashWindow = null; });
+  splashWindow.on('closed', () => {
+    splashWindow = null;
+  });
   splashWindow.webContents.on('did-finish-load', () => {
     splashWindow.show();
   });
@@ -181,7 +181,6 @@ function createMainWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.show();
   });
@@ -241,6 +240,7 @@ function main () {
   });
 
   app.on('activate', () => {
+    // displayMainWindow?
     if (mainWindow === null) createMainWindow();
   });
 }
