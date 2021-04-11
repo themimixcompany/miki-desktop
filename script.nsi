@@ -67,7 +67,7 @@ AutoCloseWindow false
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_FINISHPAGE_TEXT "Miki Desktop is installed.\r\n\r\nClick Finish to close the installer."
+!define MUI_FINISHPAGE_TEXT "Miki Desktop is installed."
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "Run ${PRODUCT}"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
@@ -133,8 +133,8 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${PRODUCT}\*.*"
   RmDir  "$SMPROGRAMS\${PRODUCT}"
 
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\${PRODUCT}"
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}"
+  DeleteRegKey HKLM "SOFTWARE\${PRODUCT}"
+  DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}"
 SectionEnd
 
 
