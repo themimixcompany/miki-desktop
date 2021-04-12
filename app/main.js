@@ -163,7 +163,7 @@ function checkPorts () {
     console.log(`** mikiStat: ${mikiStat}`);
 
     if (postgresStat == 'open' && mikiStat == 'open') {
-      sleep(5*1000);
+      sleep(10*1000);
       break loopBreak;
     } else {
       sleep(1*1000);
