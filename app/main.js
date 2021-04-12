@@ -187,7 +187,7 @@ function main () {
     splashWindow.setResizable(false);
 
     splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
-    splashWindow.on('closed', () => { splashWindow = null; });
+    // splashWindow.on('closed', () => { splashWindow = null; });
 
     mainWindow = new BrowserWindow({
       titleBarStyle: 'hidden',
@@ -199,14 +199,13 @@ function main () {
 
     mainWindow.setMenuBarVisibility(false);
 
-    checkPorts();
     mainWindow.loadURL(`http://${HOST}:${PORT}`);
-    mainWindow.on('closed', () => { mainWindow = null; });
+    // mainWindow.on('closed', () => { mainWindow = null; });
 
     mainWindow.on('ready-to-show', () => {
+      checkPorts();
       splashWindow.destroy();
       mainWindow.maximize();
-      mainWindow.reload();
       mainWindow.show();
     });
   });
