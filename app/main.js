@@ -1,4 +1,4 @@
-const VERSION = '2.9.0';
+const VERSION = '2.9.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -146,67 +146,114 @@ function startMiki () {
   require(`${MIKI_PATH}/server/index.js`);
 }
 
-function checkPorts () {
-  console.log('** checkPorts');
+// function checkPorts () {
+//   console.log('** checkPorts');
 
-  loopBreak:
+//   loopBreak:
+//   while (true) {
+//     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
+//       postgresStat = status;
+//     });
+
+//     checkPortStatus(PORT, HOST, (error, status) => {
+//       mikiStat = status;
+//     });
+
+//     console.log(`** postgresStat: ${postgresStat}`);
+//     console.log(`** mikiStat: ${mikiStat}`);
+
+//     if (postgresStat == 'open' && mikiStat == 'open') {
+//       sleep(10*1000);
+//       break loopBreak;
+//     } else {
+//       sleep(1*1000);
+//     }
+//   }
+// }
+
+function checkPostgresPort () {
+  console.log('** checkPostgresPort');
+
+  loopBreak1:
   while (true) {
     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
     });
 
-    checkPortStatus(PORT, HOST, (error, status) => {
-      mikiStat = status;
-    });
-
     console.log(`** postgresStat: ${postgresStat}`);
-    console.log(`** mikiStat: ${mikiStat}`);
 
-    if (postgresStat == 'open' && mikiStat == 'open') {
-      sleep(10*1000);
-      break loopBreak;
+    if (postgresStat == 'open') {
+      sleep(5*1000);
+      break loopBreak1;
     } else {
       sleep(1*1000);
     }
   }
 }
 
+function checkMikiPort () {
+  console.log('** checkMikiPort');
+
+  loopBreak2:
+  while (true) {
+    checkPortStatus(PORT, HOST, (error, status) => {
+      mikiStat = status;
+    });
+
+    console.log(`** mikiStat: ${mikiStat}`);
+
+    if (mikiStat == 'open') {
+      sleep(5*1000);
+      break loopBreak2;
+    } else {
+      sleep(1*1000);
+    }
+  }
+}
+
+function createSplashWindow () {
+  splashWindow = new BrowserWindow({
+    width: 400,
+    height: 400,
+    frame: false,
+    center: true,
+    transparent: true
+  });
+
+  splashWindow.setResizable(false);
+
+  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+}
+
+function createMainWindow () {
+  mainWindow = new BrowserWindow({
+    titleBarStyle: 'hidden',
+    width: 1024,
+    height: 768,
+    center: true,
+    show: false
+  });
+
+  mainWindow.setMenuBarVisibility(false);
+
+  mainWindow.loadURL(`http://${HOST}:${PORT}`);
+  mainWindow.on('closed', () => { mainWindow = null; });
+
+  mainWindow.on('ready-to-show', () => {
+    checkPostgresPort();
+    checkMikiPort();
+    splashWindow.destroy();
+    mainWindow.maximize();
+    mainWindow.show();
+  });
+}
+
 function main () {
   app.on('ready', () => {
+    createSplashWindow();
     startPostgres();
     startMiki();
-
-    splashWindow = new BrowserWindow({
-      width: 400,
-      height: 400,
-      frame: false,
-      center: true,
-      transparent: true
-    });
-
-    splashWindow.setResizable(false);
-
-    splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
-
-    mainWindow = new BrowserWindow({
-      titleBarStyle: 'hidden',
-      width: 1024,
-      height: 768,
-      center: true,
-      show: false
-    });
-
-    mainWindow.setMenuBarVisibility(false);
-
-    mainWindow.loadURL(`http://${HOST}:${PORT}`);
-    mainWindow.on('closed', () => { mainWindow = null; });
-
-    mainWindow.on('ready-to-show', () => {
-      checkPorts();
-      splashWindow.destroy();
-      mainWindow.maximize();
-      mainWindow.show();
-    });
+    createMainWindow();
   });
 
   // macos
