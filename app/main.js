@@ -147,6 +147,8 @@ function startMiki () {
 }
 
 const createSplashWindow = () => {
+  console.log('** createSplashWindow');
+
   splashWindow = new BrowserWindow({
       width: 300,
       height: 300,
@@ -165,6 +167,8 @@ const createSplashWindow = () => {
 };
 
 function createMainWindow () {
+  console.log('** createMainWindow');
+
   mainWindow = new BrowserWindow({
     titleBarStyle: 'hidden',
     width: 1024,
@@ -181,12 +185,15 @@ function createMainWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.show();
   });
 }
 
 function displayMainWindow () {
+  console.log('** displayMainWindow');
+
   mainWindow.loadURL(`http://${HOST}:${PORT}`);
 
   mainWindow.on('ready-to-show', () => {
@@ -197,11 +204,15 @@ function displayMainWindow () {
 }
 
 function displayPortStatus () {
+  console.log('** displayPortStatus');
+
   console.log(`** postgresStat: ${postgresStat}`);
   console.log(`** mikiStat: ${mikiStat}`);
 }
 
 function checkPorts () {
+  console.log('** checkPorts');
+
   loopBreak:
   while (true) {
     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
@@ -224,23 +235,66 @@ function checkPorts () {
 }
 
 function startApp () {
+  console.log('** startApp');
+
   createSplashWindow();
+
   startPostgres();
   startMiki();
   checkPorts();
+
   createMainWindow();
   displayMainWindow();
 }
 
 function main () {
-  app.on('ready', startApp);
+  // general
+  // app.on('ready', startApp);
 
+  app.on('ready', () => {
+    startPostgres();
+    startMiki();
+
+    mainWindow = new BrowserWindow({
+      titleBarStyle: 'hidden',
+      width: 1024,
+      height: 768,
+      center: true,
+      show: false
+    });
+
+    mainWindow.setMenuBarVisibility(false);
+
+    //mainWindow.on('closed', () => { mainWindow = null; });
+
+    splashWindow = new BrowserWindow({
+      width: 300,
+      height: 300,
+      frame: false,
+      center: true,
+      transparent: true
+    });
+
+    splashWindow.setResizable(false);
+
+    splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+    mainWindow.loadURL(`http://${HOST}:${PORT}`);
+
+    //splashWindow.on('closed', () => { splashWindow = null; });
+
+    mainWindow.on('ready-to-show', () => {
+      checkPorts();
+      splashWindow.destroy();
+      mainWindow.maximize();
+      mainWindow.show();
+    });
+  });
+
+  // macos
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
-
   app.on('activate', () => {
-    // displayMainWindow?
     if (mainWindow === null) createMainWindow();
   });
 }
