@@ -1,4 +1,4 @@
-const VERSION = '2.9.1';
+const VERSION = '2.9.2';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -27,6 +27,8 @@ let mainWindow;
 let postgresStat;
 let mikiStat;
 
+const WAIT_TIME = 5*1000;
+
 function initDatabase () {
   console.log('** initDatabase');
 
@@ -40,7 +42,7 @@ function startDatabase () {
   spawn(`${PG_PATH}/bin/pg_ctl`,
         ['start', '-D', `${PG_PATH}/data`]);
 
-  sleep(5*1000);
+  sleep(WAIT_TIME);
 }
 
 function createDatabase () {
@@ -158,10 +160,10 @@ function checkPostgresPort () {
     console.log(`** postgresStat: ${postgresStat}`);
 
     if (postgresStat == 'open') {
-      sleep(5*1000);
+      sleep(WAIT_TIME);
       break loopBreak1;
     } else {
-      sleep(5*1000);
+      sleep(WAIT_TIME);
     }
   }
 }
@@ -178,10 +180,10 @@ function checkMikiPort () {
     console.log(`** mikiStat: ${mikiStat}`);
 
     if (mikiStat == 'open') {
-      sleep(5*1000);
+      sleep(WAIT_TIME);
       break loopBreak2;
     } else {
-      sleep(5*1000);
+      sleep(WAIT_TIME);
     }
   }
 }
@@ -192,10 +194,9 @@ function createSplashWindow () {
     height: 400,
     frame: false,
     center: true,
-    transparent: true
+    transparent: true,
+    resizable: false
   });
-
-  splashWindow.setResizable(false);
 
   splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
 }
@@ -215,8 +216,6 @@ function createMainWindow () {
   mainWindow.on('closed', () => { mainWindow = null; });
 
   mainWindow.on('ready-to-show', () => {
-    checkPostgresPort();
-    checkMikiPort();
     splashWindow.destroy();
     mainWindow.maximize();
     mainWindow.show();
@@ -228,6 +227,8 @@ function main () {
     createSplashWindow();
     startPostgres();
     startMiki();
+    checkPostgresPort();
+    checkMikiPort();
     createMainWindow();
   });
 
