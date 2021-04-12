@@ -1,4 +1,4 @@
-const VERSION = '2.8.2';
+const VERSION = '2.9.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -187,7 +187,6 @@ function main () {
     splashWindow.setResizable(false);
 
     splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
-    // splashWindow.on('closed', () => { splashWindow = null; });
 
     mainWindow = new BrowserWindow({
       titleBarStyle: 'hidden',
@@ -200,7 +199,7 @@ function main () {
     mainWindow.setMenuBarVisibility(false);
 
     mainWindow.loadURL(`http://${HOST}:${PORT}`);
-    // mainWindow.on('closed', () => { mainWindow = null; });
+    mainWindow.on('closed', () => { mainWindow = null; });
 
     mainWindow.on('ready-to-show', () => {
       checkPorts();
