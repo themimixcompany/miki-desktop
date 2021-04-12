@@ -146,31 +146,6 @@ function startMiki () {
   require(`${MIKI_PATH}/server/index.js`);
 }
 
-// function checkPorts () {
-//   console.log('** checkPorts');
-
-//   loopBreak:
-//   while (true) {
-//     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
-//       postgresStat = status;
-//     });
-
-//     checkPortStatus(PORT, HOST, (error, status) => {
-//       mikiStat = status;
-//     });
-
-//     console.log(`** postgresStat: ${postgresStat}`);
-//     console.log(`** mikiStat: ${mikiStat}`);
-
-//     if (postgresStat == 'open' && mikiStat == 'open') {
-//       sleep(10*1000);
-//       break loopBreak;
-//     } else {
-//       sleep(1*1000);
-//     }
-//   }
-// }
-
 function checkPostgresPort () {
   console.log('** checkPostgresPort');
 
@@ -186,7 +161,7 @@ function checkPostgresPort () {
       sleep(5*1000);
       break loopBreak1;
     } else {
-      sleep(1*1000);
+      sleep(5*1000);
     }
   }
 }
@@ -206,7 +181,7 @@ function checkMikiPort () {
       sleep(5*1000);
       break loopBreak2;
     } else {
-      sleep(1*1000);
+      sleep(5*1000);
     }
   }
 }
