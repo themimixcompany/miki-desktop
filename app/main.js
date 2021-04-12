@@ -146,70 +146,6 @@ function startMiki () {
   require(`${MIKI_PATH}/server/index.js`);
 }
 
-const createSplashWindow = () => {
-  console.log('** createSplashWindow');
-
-  splashWindow = new BrowserWindow({
-      width: 300,
-      height: 300,
-      frame: false,
-      transparent: true
-  });
-
-  splashWindow.setResizable(false);
-  splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
-  splashWindow.on('closed', () => {
-    splashWindow = null;
-  });
-  splashWindow.webContents.on('did-finish-load', () => {
-    splashWindow.show();
-  });
-};
-
-function createMainWindow () {
-  console.log('** createMainWindow');
-
-  mainWindow = new BrowserWindow({
-    titleBarStyle: 'hidden',
-    width: 1024,
-    height: 768,
-    center: true,
-    show: false,
-    webPreferences: {
-      nodeIntegration: true
-    }
-  });
-
-  mainWindow.setMenuBarVisibility(false);
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.show();
-  });
-}
-
-function displayMainWindow () {
-  console.log('** displayMainWindow');
-
-  mainWindow.loadURL(`http://${HOST}:${PORT}`);
-
-  mainWindow.on('ready-to-show', () => {
-    splashWindow.destroy();
-    mainWindow.maximize();
-    mainWindow.show();
-  });
-}
-
-function displayPortStatus () {
-  console.log('** displayPortStatus');
-
-  console.log(`** postgresStat: ${postgresStat}`);
-  console.log(`** mikiStat: ${mikiStat}`);
-}
-
 function checkPorts () {
   console.log('** checkPorts');
 
@@ -223,37 +159,35 @@ function checkPorts () {
       mikiStat = status;
     });
 
+    console.log(`** postgresStat: ${postgresStat}`);
+    console.log(`** mikiStat: ${mikiStat}`);
+
     if (postgresStat == 'open' && mikiStat == 'open') {
-      displayPortStatus();
       sleep(5*1000);
       break loopBreak;
     } else {
-      displayPortStatus();
       sleep(1*1000);
     }
   }
 }
 
-function startApp () {
-  console.log('** startApp');
-
-  createSplashWindow();
-
-  startPostgres();
-  startMiki();
-  checkPorts();
-
-  createMainWindow();
-  displayMainWindow();
-}
-
 function main () {
-  // general
-  // app.on('ready', startApp);
-
   app.on('ready', () => {
     startPostgres();
     startMiki();
+
+    splashWindow = new BrowserWindow({
+      width: 400,
+      height: 400,
+      frame: false,
+      center: true,
+      transparent: true
+    });
+
+    splashWindow.setResizable(false);
+
+    splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+    splashWindow.on('closed', () => { splashWindow = null; });
 
     mainWindow = new BrowserWindow({
       titleBarStyle: 'hidden',
@@ -265,27 +199,14 @@ function main () {
 
     mainWindow.setMenuBarVisibility(false);
 
-    //mainWindow.on('closed', () => { mainWindow = null; });
-
-    splashWindow = new BrowserWindow({
-      width: 300,
-      height: 300,
-      frame: false,
-      center: true,
-      transparent: true
-    });
-
-    splashWindow.setResizable(false);
-
-    splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
+    checkPorts();
     mainWindow.loadURL(`http://${HOST}:${PORT}`);
-
-    //splashWindow.on('closed', () => { splashWindow = null; });
+    mainWindow.on('closed', () => { mainWindow = null; });
 
     mainWindow.on('ready-to-show', () => {
-      checkPorts();
       splashWindow.destroy();
       mainWindow.maximize();
+      mainWindow.reload();
       mainWindow.show();
     });
   });
