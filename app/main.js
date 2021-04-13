@@ -1,4 +1,4 @@
-const VERSION = '2.9.3';
+const VERSION = '2.9.4';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -227,15 +227,13 @@ function createMainWindow () {
 function main () {
   app.on('ready', () => {
     createSplashWindow();
-
-    startPostgres();
-    startMiki();
-
     checkPostgresPort();
     checkMikiPort();
-
     createMainWindow();
   });
+
+  startPostgres();
+  startMiki();
 
   // macos
   app.on('window-all-closed', () => {
