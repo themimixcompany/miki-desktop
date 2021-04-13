@@ -32,6 +32,9 @@ BrandingText "${PRODUCT} Installer ${VERSION}"
 Caption "${PRODUCT} Installer"
 UninstallCaption "${PRODUCT} Uninstaller"
 
+Icon "nsis\images\icon.ico"
+UninstallIcon "nsis\images\icon.ico"
+
 !define MUI_FILE "${PRODUCT}"
 !define MUI_BRANDINGTEXT "${PRODUCT}"
 
@@ -46,6 +49,7 @@ CRCCheck on
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 InstallDir "$PROGRAMFILES64\${PRODUCT}"
+InstallDirRegKey HKLM "SOFTWARE\${PRODUCT}" "InstallLocation"
 AutoCloseWindow false
 
 
