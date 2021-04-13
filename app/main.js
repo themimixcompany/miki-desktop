@@ -1,4 +1,4 @@
-const VERSION = '2.9.2';
+const VERSION = '2.9.3';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -163,7 +163,7 @@ function checkPostgresPort () {
       sleep(WAIT_TIME);
       break loopBreak1;
     } else {
-      sleep(WAIT_TIME);
+      sleep(1*1000);
     }
   }
 }
@@ -183,7 +183,7 @@ function checkMikiPort () {
       sleep(WAIT_TIME);
       break loopBreak2;
     } else {
-      sleep(WAIT_TIME);
+      sleep(1*1000);
     }
   }
 }
@@ -195,7 +195,10 @@ function createSplashWindow () {
     frame: false,
     center: true,
     transparent: true,
-    resizable: false
+    resizable: false,
+    webPreferences: {
+      contextIsolation: true
+    }
   });
 
   splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
@@ -207,7 +210,10 @@ function createMainWindow () {
     width: 1024,
     height: 768,
     center: true,
-    show: false
+    show: false,
+    webPreferences: {
+      contextIsolation: true
+    }
   });
 
   mainWindow.setMenuBarVisibility(false);
@@ -225,10 +231,26 @@ function createMainWindow () {
 function main () {
   app.on('ready', () => {
     createSplashWindow();
+
     startPostgres();
     startMiki();
-    checkPostgresPort();
-    checkMikiPort();
+
+    // postgres only
+    // - late splash
+    // - miki will complain about jwt auth strategy
+
+    // miki only
+    // - late splash
+    // - ok miki
+
+    // both
+    // - late splash
+    // - ok miki
+
+    // no checks
+    // - ok splash
+    // - blank miki
+
     createMainWindow();
   });
 
