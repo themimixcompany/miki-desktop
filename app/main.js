@@ -27,8 +27,6 @@ let mainWindow;
 let postgresStat;
 let mikiStat;
 
-const WAIT_TIME = 5*1000;
-
 function initDatabase () {
   console.log('** initDatabase');
 
@@ -42,7 +40,7 @@ function startDatabase () {
   spawn(`${PG_PATH}/bin/pg_ctl`,
         ['start', '-D', `${PG_PATH}/data`]);
 
-  sleep(WAIT_TIME);
+  sleep(5*1000);
 }
 
 function createDatabase () {
@@ -151,7 +149,7 @@ function startMiki () {
 function checkPostgresPort () {
   console.log('** checkPostgresPort');
 
-  loopBreak1:
+  postgresOut:
   while (true) {
     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
@@ -160,10 +158,9 @@ function checkPostgresPort () {
     console.log(`** postgresStat: ${postgresStat}`);
 
     if (postgresStat == 'open') {
-      sleep(WAIT_TIME);
-      break loopBreak1;
+      break postgresOut;
     } else {
-      sleep(1*1000);
+      sleep(1000);
     }
   }
 }
@@ -171,7 +168,7 @@ function checkPostgresPort () {
 function checkMikiPort () {
   console.log('** checkMikiPort');
 
-  loopBreak2:
+  mikiOut:
   while (true) {
     checkPortStatus(PORT, HOST, (error, status) => {
       mikiStat = status;
@@ -180,10 +177,9 @@ function checkMikiPort () {
     console.log(`** mikiStat: ${mikiStat}`);
 
     if (mikiStat == 'open') {
-      sleep(WAIT_TIME);
-      break loopBreak2;
+      break mikiOut;
     } else {
-      sleep(1*1000);
+      sleep(1000);
     }
   }
 }
@@ -235,21 +231,8 @@ function main () {
     startPostgres();
     startMiki();
 
-    // postgres only
-    // - late splash
-    // - miki will complain about jwt auth strategy
-
-    // miki only
-    // - late splash
-    // - ok miki
-
-    // both
-    // - late splash
-    // - ok miki
-
-    // no checks
-    // - ok splash
-    // - blank miki
+    checkPostgresPort();
+    checkMikiPort();
 
     createMainWindow();
   });
