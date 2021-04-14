@@ -1,5 +1,5 @@
 # script.nsi
-# v1.6.0
+# v2.0.0
 
 
 #---------------------------------------------------------------------------------------------------
@@ -23,39 +23,34 @@
 # General
 #---------------------------------------------------------------------------------------------------
 
-
 !define PRODUCT "Miki Desktop"
 !define VERSION "1.0.0"
 
 Name "${PRODUCT}"
 BrandingText "${PRODUCT} Installer ${VERSION}"
+
 Caption "${PRODUCT} Installer"
 UninstallCaption "${PRODUCT} Uninstaller"
-
 Icon "nsis\images\icon.ico"
 UninstallIcon "nsis\images\icon.ico"
-
-!define MUI_FILE "${PRODUCT}"
-!define MUI_BRANDINGTEXT "${PRODUCT}"
-
-!define MUI_ICON "nsis\images\icon.ico"
-!define MUI_UNICON "nsis\images\icon.ico"
-!define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "nsis\images\icon.bmp"
-!define MUI_HEADERIMAGE_RIGHT
+ShowInstDetails nevershow
+ShowUninstDetails nevershow
 
 OutFile "out/${PRODUCT} Setup ${VERSION}.exe"
 CRCCheck on
-ShowInstDetails nevershow
-ShowUninstDetails nevershow
+
 InstallDir "$PROGRAMFILES64\${PRODUCT}"
 InstallDirRegKey HKLM "SOFTWARE\${PRODUCT}" "InstallLocation"
+
 AutoCloseWindow false
 
 
 #---------------------------------------------------------------------------------------------------
-# Pages
+# Macros
 #---------------------------------------------------------------------------------------------------
+
+!define MUI_ICON "nsis\images\icon.ico"
+!define MUI_UNICON "nsis\images\icon.ico"
 
 !define MUI_WELCOMEFINISHPAGE_BITMAP "nsis\images\install.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "nsis\images\uninstall.bmp"
@@ -112,14 +107,17 @@ Section "install" Installation
   SetOutPath "$INSTDIR"
   File /r "out\Miki Desktop-win32-x64\*.*"
 
-  CreateShortCut "$DESKTOP\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" ""
+  CreateShortCut "$DESKTOP\${PRODUCT}.lnk" "$INSTDIR\${PRODUCT}.exe" ""
 
   CreateDirectory "$SMPROGRAMS\${PRODUCT}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\${PRODUCT}\${PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}.exe" "" "$INSTDIR\${MUI_FILE}.exe" 0
+  CreateShortCut "$SMPROGRAMS\${PRODUCT}\${PRODUCT}.lnk" "$INSTDIR\${PRODUCT}.exe" "" "$INSTDIR\${PRODUCT}.exe" 0
+
+  WriteRegStr HKLM "SOFTWARE\${PRODUCT}" "InstallLocation" "$INSTDIR"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "UninstallString" "$INSTDIR\Uninstall.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayIcon" "$INSTDIR\resources\app\nsis\images\icon.ico"
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
