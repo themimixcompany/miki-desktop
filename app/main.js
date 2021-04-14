@@ -8,11 +8,11 @@ const { checkPortStatus } = require('portscanner');
 const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
-const PORT = process.env.PORT || 50250;
+const PORT = process.env.PORT || 50000; //see port dictionary
 
 var PG_PATH;
 const PG_HOST = 'localhost';
-const PG_PORT = 60750;
+const PG_PORT = 60750; //see port dictionary
 const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
@@ -24,23 +24,62 @@ var CORE_PATH;
 
 let splashWindow;
 let mainWindow;
-let postgresStat;
-let mikiStat;
 
-function initDatabase () {
-  console.log('** initDatabase');
+function checkPostgresPort () {
+  console.log('** checkPostgresPort');
+
+  let postgresStat;
+
+  postgresOut:
+  while (true) {
+    checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
+      postgresStat = status;
+    });
+
+    console.log(`** postgresStat: ${postgresStat}`);
+
+    if (postgresStat == 'open') {
+      break postgresOut;
+    } else {
+      sleep(1000);
+    }
+  }
+}
+
+function checkMikiPort () {
+  console.log('** checkMikiPort');
+
+  let mikiStat;
+
+  mikiOut:
+  while (true) {
+    checkPortStatus(PORT, HOST, (error, status) => {
+      mikiStat = status;
+    });
+
+    console.log(`** mikiStat: ${mikiStat}`);
+
+    if (mikiStat == 'open') {
+      break mikiOut;
+    } else {
+      sleep(1000);
+    }
+  }
+}
+
+function setupPostgres () {
+  console.log('** setupPostgres');
 
   spawnSync(`${PG_PATH}/bin/initdb`,
             ['-U', PG_USER, '-A', 'trust', '-D', `${PG_PATH}/data`]);
 }
 
-function startDatabase () {
-  console.log('** startDatabase');
+function startPostgres () {
+  console.log('** startPostgres');
+  console.log()
 
   spawn(`${PG_PATH}/bin/pg_ctl`,
-        ['start', '-D', `${PG_PATH}/data`]);
-
-  sleep(5*1000);
+        ['start', '-o',`"-p ${PG_PORT}"`,'-D', `${PG_PATH}/data`]);
 }
 
 function createDatabase () {
@@ -55,8 +94,8 @@ function execSQL(statement) {
             ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement]);
 }
 
-function setupDatabase () {
-  console.log('** setupDatabase');
+function setupPrivileges () {
+  console.log('** setupPrivileges');
 
   execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
 }
@@ -105,20 +144,21 @@ function handleStartPostgres () {
   console.log('** handleStartPostgres');
 
   if(fs.existsSync(`${PG_PATH}/data`)) {
-    startDatabase();
+    startPostgres();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
-    initDatabase();
-    startDatabase();
+    setupPostgres();
+    startPostgres();
+    checkPostgresPort();
     createDatabase();
-    setupDatabase();
+    setupPrivileges();
     installCore();
     setupAccount();
   }
 }
 
-function startPostgres () {
-  console.log('** startPostgres');
+function setupPostgresPlatform () {
+  console.log('** setupPostgresPlatform');
 
   switch(process.platform) {
   case 'win32':
@@ -144,44 +184,6 @@ function startMiki () {
 
   process.chdir(MIKI_PATH);
   require(`${MIKI_PATH}/server/index.js`);
-}
-
-function checkPostgresPort () {
-  console.log('** checkPostgresPort');
-
-  postgresOut:
-  while (true) {
-    checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
-      postgresStat = status;
-    });
-
-    console.log(`** postgresStat: ${postgresStat}`);
-
-    if (postgresStat == 'open') {
-      break postgresOut;
-    } else {
-      sleep(1000);
-    }
-  }
-}
-
-function checkMikiPort () {
-  console.log('** checkMikiPort');
-
-  mikiOut:
-  while (true) {
-    checkPortStatus(PORT, HOST, (error, status) => {
-      mikiStat = status;
-    });
-
-    console.log(`** mikiStat: ${mikiStat}`);
-
-    if (mikiStat == 'open') {
-      break mikiOut;
-    } else {
-      sleep(1000);
-    }
-  }
 }
 
 function createSplashWindow () {
@@ -225,6 +227,20 @@ function createMainWindow () {
 }
 
 function main () {
+
+  //attempt to get a lock for this process
+  const lockRequested = app.requestSingleInstanceLock();
+
+  console.log("lockRequested: ",lockRequested);
+
+  //are we the process that has the lock? if not, quit
+  if (!lockRequested) {
+    app.exit();
+  }
+
+  //we have the lock!
+
+  //setup for electron ready
   app.on('ready', () => {
     createSplashWindow();
     checkPostgresPort();
@@ -232,7 +248,18 @@ function main () {
     createMainWindow();
   });
 
-  startPostgres();
+  //if someone started another instance, focus us (the original)
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+  });
+
+  //detect platform & start SQL server
+  setupPostgresPlatform();
+
+  //start Miki
   startMiki();
 
   // macos
