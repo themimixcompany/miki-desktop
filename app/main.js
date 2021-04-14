@@ -1,4 +1,4 @@
-const VERSION = '2.9.4';
+const VERSION = '2.10.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -8,11 +8,11 @@ const { checkPortStatus } = require('portscanner');
 const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 50250;
 
 var PG_PATH;
 const PG_HOST = 'localhost';
-const PG_PORT = 5432;
+const PG_PORT = 60750;
 const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
