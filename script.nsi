@@ -32,7 +32,7 @@ BrandingText "${PRODUCT} Installer ${VERSION}"
 Caption "${PRODUCT} Installer"
 UninstallCaption "${PRODUCT} Uninstaller"
 Icon "nsis\images\icon.ico"
-UninstallIcon "nsis\images\icon.ico"
+UninstallIcon "nsis\images\unicon.ico"
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
@@ -117,7 +117,7 @@ Section "install" Installation
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayName" "${PRODUCT}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "UninstallString" "$INSTDIR\Uninstall.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayIcon" "$INSTDIR\resources\app\nsis\images\icon.ico"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}" "DisplayIcon" "$INSTDIR\resources\app\nsis\images\unicon.ico"
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
