@@ -8,7 +8,7 @@ const { checkPortStatus } = require('portscanner');
 const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
-const PORT = process.env.PORT || 50000; //see port dictionary
+const PORT = process.env.PORT || 48000; //see port dictionary
 
 var PG_PATH;
 const PG_HOST = 'localhost';
@@ -30,7 +30,7 @@ function checkPostgresPort () {
 
   let postgresStat;
 
-  postgresOut:
+  loopBreak:
   while (true) {
     checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
       postgresStat = status;
@@ -39,7 +39,7 @@ function checkPostgresPort () {
     console.log(`** postgresStat: ${postgresStat}`);
 
     if (postgresStat == 'open') {
-      break postgresOut;
+      break loopBreak;
     } else {
       sleep(1000);
     }
@@ -51,7 +51,7 @@ function checkMikiPort () {
 
   let mikiStat;
 
-  mikiOut:
+  loopBreak:
   while (true) {
     checkPortStatus(PORT, HOST, (error, status) => {
       mikiStat = status;
@@ -60,7 +60,7 @@ function checkMikiPort () {
     console.log(`** mikiStat: ${mikiStat}`);
 
     if (mikiStat == 'open') {
-      break mikiOut;
+      break loopBreak;
     } else {
       sleep(1000);
     }
@@ -76,7 +76,6 @@ function setupPostgres () {
 
 function startPostgres () {
   console.log('** startPostgres');
-  console.log()
 
   spawn(`${PG_PATH}/bin/pg_ctl`,
         ['start', '-o',`"-p ${PG_PORT}"`,'-D', `${PG_PATH}/data`]);
@@ -107,7 +106,7 @@ function installCore () {
             ['-c', '-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, CORE_PATH]);
 }
 
-function getValueByKey(text, key) {
+function getValueByKey (text, key) {
   const regex = new RegExp("^" + key + ": (.*)$", "m");
   const match = regex.exec(text);
 
@@ -249,7 +248,7 @@ function main () {
   });
 
   //if someone started another instance, focus us (the original)
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
+  app.on('second-instance', (event, cmdline, cwd) => {
     if (mainWindow.isMinimized()) {
       mainWindow.restore();
     }
