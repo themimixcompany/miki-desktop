@@ -1,10 +1,10 @@
-const VERSION = '2.10.0';
+const VERSION = '2.10.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const fs = require('fs-extra');
-const { checkPortStatus } = require('portscanner');
+const isPortReachable = require('is-port-reachable');
 const os = require('os');
 
 const HOST = process.env.HOST || '127.0.0.1';
@@ -66,18 +66,9 @@ function debugSync (cmd) {
 function checkPostgresPort () {
   console.log('** checkPostgresPort');
 
-  let postgresStat;
-
   loopBreak:
   while (true) {
-    checkPortStatus(PG_PORT, PG_HOST, (error, status) => {
-      console.log(`error: ${error}`);
-      postgresStat = status;
-    });
-
-    console.log(`** postgresStat: ${postgresStat}`);
-
-    if (postgresStat == 'open') {
+    if ((async () => { return(await isPortReachable(PG_PORT, { host: PG_HOST })); })()) {
       break loopBreak;
     } else {
       sleep(1000);
@@ -88,17 +79,9 @@ function checkPostgresPort () {
 function checkMikiPort () {
   console.log('** checkMikiPort');
 
-  let mikiStat;
-
   loopBreak:
   while (true) {
-    checkPortStatus(PORT, HOST, (error, status) => {
-      mikiStat = status;
-    });
-
-    console.log(`** mikiStat: ${mikiStat}`);
-
-    if (mikiStat == 'open') {
+    if ((async () => { return(await isPortReachable(PORT, { host: HOST })); })()) {
       break loopBreak;
     } else {
       sleep(1000);
@@ -126,7 +109,7 @@ function setupPostgres () {
   console.log('** setupPostgres');
 
   debugSync(spawnSync(`${PG_PATH}/bin/initdb`,
-                      ['-U', PG_USER, '-A', 'trust', '-E', 'utf8', '-D', PG_DATA_PATH],
+                      ['-U', PG_USER, '-A', 'trust', '-D', PG_DATA_PATH],
                       { encoding: 'utf8'}));
 }
 
@@ -134,11 +117,11 @@ function startPostgres () {
   console.log('** startPostgres');
 
   spawn(`${PG_PATH}/bin/pg_ctl`,
-        ['start', '-o',`"-p ${PG_PORT}"`, '-l', `${MIMIX_DIRECTORY}/pgsql/log`,
+        ['restart', '-o',`"-p ${PG_PORT}"`, '-l', `${MIMIX_DIRECTORY}/pgsql/log`,
          '-D', PG_DATA_PATH]);
 }
 
-async function createDatabase () {
+function createDatabase () {
   console.log('** createDatabase');
 
   debugSync(spawnSync(`${PG_PATH}/bin/createdb`,
@@ -204,7 +187,6 @@ function handleStartPostgres () {
 
   if(fs.existsSync(`${PG_DATA_PATH}`)) {
     startPostgres();
-    checkPostgresPort();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
     createMimixDirectory();
@@ -305,16 +287,9 @@ function main () {
 
   //setup for electron ready
   app.on('ready', () => {
-    console.log('3a');
     createSplashWindow();
-
-    console.log('3b');
     checkPostgresPort();
-
-    console.log('3c');
     checkMikiPort();
-
-    console.log('3d');
     createMainWindow();
   });
 
@@ -326,21 +301,17 @@ function main () {
     mainWindow.focus();
   });
 
-  console.log('5');
   //detect platform & start SQL server
   setupPostgresPlatform();
 
-  console.log('6');
   //start Miki
   startMiki();
 
-  console.log('7');
   // macos
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('activate', () => {
-    console.log('7b');
     if (mainWindow === null) createMainWindow();
   });
 }
