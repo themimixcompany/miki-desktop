@@ -1,4 +1,4 @@
-const VERSION = '2.10.1';
+const VERSION = '2.10.2';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -116,9 +116,11 @@ function setupPostgres () {
 function startPostgres () {
   console.log('** startPostgres');
 
-  spawn(`${PG_PATH}/bin/pg_ctl`,
-        ['restart', '-o',`"-p ${PG_PORT}"`, '-l', `${MIMIX_DIRECTORY}/pgsql/log`,
-         '-D', PG_DATA_PATH]);
+  debug(spawn(`${PG_PATH}/bin/pg_ctl`,
+              ['restart', '-o',`"-p ${PG_PORT}"`, '-l', `${MIMIX_DIRECTORY}/pgsql/log`,
+               '-D', PG_DATA_PATH]));
+
+  sleep(1000);
 }
 
 function createDatabase () {
