@@ -1,4 +1,4 @@
-const VERSION = '2.10.2';
+const VERSION = '2.10.3';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -303,19 +303,24 @@ function main () {
     mainWindow.focus();
   });
 
-  //detect platform & start SQL server
+  // macos
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  });
+
+  app.on('activate', () => {
+    if (mainWindow === null) {
+      createMainWindow();
+    }
+  });
+
+  // setup and start PostgreSQL
   setupPostgresPlatform();
 
   //start Miki
   startMiki();
-
-  // macos
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
-  });
-  app.on('activate', () => {
-    if (mainWindow === null) createMainWindow();
-  });
 }
 
 main();
