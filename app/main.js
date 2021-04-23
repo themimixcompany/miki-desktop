@@ -1,4 +1,4 @@
-const VERSION = '2.10.3';
+const VERSION = '2.11.0';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -6,6 +6,7 @@ const { spawn, spawnSync } = require('child_process');
 const fs = require('fs-extra');
 const isPortReachable = require('is-port-reachable');
 const os = require('os');
+const sleep = require('system-sleep');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.PORT || 48000; //see port dictionary
@@ -21,6 +22,9 @@ const PG_DATABASE = 'defaultdb';
 
 var MIKI_PATH;
 
+const constants = require('./constants');
+const MIKI_TEMP = constants.mikiTemp;
+
 var MIMIX_APPDATA;
 var MIMIX_DIRECTORY;
 
@@ -29,7 +33,7 @@ var CORE_PATH;
 let splashWindow;
 let mainWindow;
 
-function sleep (milliseconds) {
+function hardSleep (milliseconds) {
   const date = Date.now();
   let currentDate = null;
 
@@ -57,42 +61,50 @@ function debug (cmd) {
 function debugSync (cmd) {
   console.log('** debugSync');
 
-  if (cmd.error) { console.log(`error: ${cmd.error}`); }
-  if (cmd.stdout) { console.log(`stdout: ${cmd.stdout}`); }
-  if (cmd.stderr) { console.log(`stderr: ${cmd.stderr}`); }
-  if (cmd.status) { console.log(`exit code: ${cmd.status}`); }
+  if(cmd.error) { console.log(`error: ${cmd.error}`); }
+  if(cmd.stdout) { console.log(`stdout: ${cmd.stdout}`); }
+  if(cmd.stderr) { console.log(`stderr: ${cmd.stderr}`); }
+  if(cmd.status) { console.log(`exit code: ${cmd.status}`); }
+}
+
+function checkPostgresOnce () {
+  const cmd = spawnSync(`${PG_PATH}/bin/pg_ctl`,
+                        ['status', '-o', `"-p ${PG_PORT}"`, '-D', PG_DATA_PATH]);
+
+  console.log(`postgres status: ${cmd.status}`);
+
+  return cmd.status == 0;
 }
 
 function checkPostgresPort () {
   console.log('** checkPostgresPort');
 
-  loopBreak:
-  while (true) {
-    if ((async () => { return(await isPortReachable(PG_PORT, { host: PG_HOST })); })()) {
-      break loopBreak;
-    } else {
-      sleep(1000);
-    }
+  while(!checkPostgresOnce()) {
+    hardSleep(1000);
   }
 }
 
-function checkMikiPort () {
-  console.log('** checkMikiPort');
+function checkMikiOnce () {
+  if(fs.existsSync(MIKI_TEMP)) {
+    fs.unlinkSync(MIKI_TEMP);
+    return true;
+  } else {
+    return false;
+  }
+}
 
-  loopBreak:
-  while (true) {
-    if ((async () => { return(await isPortReachable(PORT, { host: HOST })); })()) {
-      break loopBreak;
-    } else {
-      sleep(1000);
-    }
+function checkMiki () {
+  console.log('** checkMiki');
+
+  while(!checkMikiOnce()) {
+    sleep(1000);
   }
 }
 
 function createMimixDirectory () {
   console.log('** createMimixDirectory');
 
-  if (!fs.existsSync(MIMIX_DIRECTORY)) {
+  if(!fs.existsSync(MIMIX_DIRECTORY)) {
     fs.mkdirSync(MIMIX_DIRECTORY, { recursive: true });
   }
 }
@@ -100,13 +112,13 @@ function createMimixDirectory () {
 function createPostgresDirectory () {
   console.log('** createPostgresDirectory');
 
-  if (!fs.existsSync(`${MIMIX_DIRECTORY}/pgsql`)) {
+  if(!fs.existsSync(`${MIMIX_DIRECTORY}/pgsql`)) {
     fs.mkdirSync(`${MIMIX_DIRECTORY}/pgsql`, { recursive: true });
   }
 }
 
-function setupPostgres () {
-  console.log('** setupPostgres');
+function initPostgres () {
+  console.log('** initPostgres');
 
   debugSync(spawnSync(`${PG_PATH}/bin/initdb`,
                       ['-U', PG_USER, '-A', 'trust', '-D', PG_DATA_PATH],
@@ -119,8 +131,6 @@ function startPostgres () {
   debug(spawn(`${PG_PATH}/bin/pg_ctl`,
               ['restart', '-o',`"-p ${PG_PORT}"`, '-l', `${MIMIX_DIRECTORY}/pgsql/log`,
                '-D', PG_DATA_PATH]));
-
-  sleep(1000);
 }
 
 function createDatabase () {
@@ -155,7 +165,7 @@ function getValueByKey (text, key) {
   const regex = new RegExp("^" + key + ": (.*)$", "m");
   const match = regex.exec(text);
 
-  if (match) {
+  if(match) {
     return match[1];
   }
   else {
@@ -171,7 +181,7 @@ function setupAccount () {
   let password;
 
   fs.readFile(configPath, 'utf8', (err, data) => {
-    if (err) {
+    if(err) {
       console.error(err);
     }
 
@@ -184,16 +194,33 @@ function setupAccount () {
   });
 }
 
+function setupCommonVars () {
+  console.log('** setupCommonVars');
+
+  switch(process.platform) {
+  case 'win32':
+    MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
+    break;
+  case 'darwin':
+    MIMIX_DIRECTORY = path.resolve(os.homedir(), '.mimix');
+    break;
+  default:
+    console.log(`The platform ${process.platform} is unsupported. Aborting.`);
+    process.exit(1);
+  }
+}
+
 function handleStartPostgres () {
   console.log('** handleStartPostgres');
 
   if(fs.existsSync(`${PG_DATA_PATH}`)) {
     startPostgres();
+    checkPostgresPort();
   } else {
     process.env.PGPASSWORD = PG_PASSWORD;
     createMimixDirectory();
     createPostgresDirectory();
-    setupPostgres();
+    initPostgres();
     startPostgres();
     checkPostgresPort();
     createDatabase();
@@ -203,23 +230,19 @@ function handleStartPostgres () {
   }
 }
 
-function setupPostgresPlatform () {
-  console.log('** setupPostgresPlatform');
+function setupPostgres () {
+  console.log('** setupPostgres');
 
   switch(process.platform) {
   case 'win32':
-    MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
     PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
     PG_DATA_PATH = path.resolve(`${PG_PATH}/data`);
-    MIKI_PATH = path.resolve(`${MIMIX_APPDATA}/miki`);
     CORE_PATH = path.resolve(`${MIMIX_APPDATA}/pgdumps/miki-core.postgres`);
     handleStartPostgres();
     break;
   case 'darwin':
-    MIMIX_DIRECTORY = path.resolve(os.homedir(), '.mimix');
     PG_PATH = path.resolve(__dirname, 'pgsql');
     PG_DATA_PATH = path.resolve(`${MIMIX_DIRECTORY}/pgsql/data`);
-    MIKI_PATH = path.resolve(__dirname, 'miki');
     CORE_PATH = path.resolve(__dirname, 'pgdumps/miki-core.postgres');
     handleStartPostgres();
     break;
@@ -229,8 +252,20 @@ function setupPostgresPlatform () {
   }
 }
 
-function startMiki () {
-  console.log('** startMiki');
+function setupMiki () {
+  console.log('** setupMiki');
+
+  switch(process.platform) {
+  case 'win32':
+    MIKI_PATH = path.resolve(`${MIMIX_APPDATA}/miki`);
+    break;
+  case 'darwin':
+    MIKI_PATH = path.resolve(__dirname, 'miki');
+    break;
+  default:
+    console.log(`The platform ${process.platform} is unsupported. Aborting.`);
+    process.exit(1);
+  }
 
   process.chdir(MIKI_PATH);
   require(`${MIKI_PATH}/server/index.js`);
@@ -281,7 +316,7 @@ function main () {
   const lockRequested = app.requestSingleInstanceLock();
 
   //are we the process that has the lock? if not, quit
-  if (!lockRequested) {
+  if(!lockRequested) {
     app.exit();
   }
 
@@ -290,14 +325,14 @@ function main () {
   //setup for electron ready
   app.on('ready', () => {
     createSplashWindow();
-    checkPostgresPort();
-    checkMikiPort();
+
+    checkMiki();
     createMainWindow();
   });
 
   //if someone started another instance, focus us (the original)
   app.on('second-instance', (event, cmdline, cwd) => {
-    if (mainWindow.isMinimized()) {
+    if(mainWindow.isMinimized()) {
       mainWindow.restore();
     }
     mainWindow.focus();
@@ -305,22 +340,25 @@ function main () {
 
   // macos
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if(process.platform !== 'darwin') {
       app.quit();
     }
   });
 
   app.on('activate', () => {
-    if (mainWindow === null) {
-      createMainWindow();
-    }
+   if(mainWindow === null) {
+     createMainWindow();
+   }
   });
 
-  // setup and start PostgreSQL
-  setupPostgresPlatform();
+  // setup common variables
+  setupCommonVars();
 
-  //start Miki
-  startMiki();
+  // setup and start Postgres
+  setupPostgres();
+
+  // setup and start Miki
+  setupMiki();
 }
 
 main();
