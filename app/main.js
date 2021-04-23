@@ -1,10 +1,9 @@
-const VERSION = '2.11.0';
+const VERSION = '2.11.1';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const fs = require('fs-extra');
-const isPortReachable = require('is-port-reachable');
 const os = require('os');
 const sleep = require('system-sleep');
 
@@ -20,15 +19,11 @@ const PG_USER = 'doadmin';
 const PG_PASSWORD = '0123456789';
 const PG_DATABASE = 'defaultdb';
 
-var MIKI_PATH;
-
-const constants = require('./constants');
-const MIKI_TEMP = constants.mikiTemp;
-
-var MIMIX_APPDATA;
 var MIMIX_DIRECTORY;
-
+var MIKI_PATH;
 var CORE_PATH;
+
+const MIKI_LOCK = path.resolve(os.tmpdir(), 'miki.lock');
 
 let splashWindow;
 let mainWindow;
@@ -71,8 +66,6 @@ function checkPostgresOnce () {
   const cmd = spawnSync(`${PG_PATH}/bin/pg_ctl`,
                         ['status', '-o', `"-p ${PG_PORT}"`, '-D', PG_DATA_PATH]);
 
-  console.log(`postgres status: ${cmd.status}`);
-
   return cmd.status == 0;
 }
 
@@ -85,8 +78,8 @@ function checkPostgresPort () {
 }
 
 function checkMikiOnce () {
-  if(fs.existsSync(MIKI_TEMP)) {
-    fs.unlinkSync(MIKI_TEMP);
+  if(fs.existsSync(MIKI_LOCK)) {
+    fs.unlinkSync(MIKI_LOCK);
     return true;
   } else {
     return false;
@@ -199,7 +192,7 @@ function setupCommonVars () {
 
   switch(process.platform) {
   case 'win32':
-    MIMIX_APPDATA = path.resolve(process.env.APPDATA, 'Mimix');
+    MIMIX_DIRECTORY = path.resolve(process.env.APPDATA, 'Mimix');
     break;
   case 'darwin':
     MIMIX_DIRECTORY = path.resolve(os.homedir(), '.mimix');
@@ -235,9 +228,9 @@ function setupPostgres () {
 
   switch(process.platform) {
   case 'win32':
-    PG_PATH = path.resolve(`${MIMIX_APPDATA}/pgsql`);
+    PG_PATH = path.resolve(`${MIMIX_DIRECTORY}/pgsql`);
     PG_DATA_PATH = path.resolve(`${PG_PATH}/data`);
-    CORE_PATH = path.resolve(`${MIMIX_APPDATA}/pgdumps/miki-core.postgres`);
+    CORE_PATH = path.resolve(`${MIMIX_DIRECTORY}/pgdumps/miki-core.postgres`);
     handleStartPostgres();
     break;
   case 'darwin':
@@ -257,7 +250,7 @@ function setupMiki () {
 
   switch(process.platform) {
   case 'win32':
-    MIKI_PATH = path.resolve(`${MIMIX_APPDATA}/miki`);
+    MIKI_PATH = path.resolve(`${MIMIX_DIRECTORY}/miki`);
     break;
   case 'darwin':
     MIKI_PATH = path.resolve(__dirname, 'miki');
@@ -279,6 +272,7 @@ function createSplashWindow () {
     center: true,
     transparent: true,
     resizable: false,
+    hasShadow: false,
     webPreferences: {
       contextIsolation: true
     }
@@ -346,9 +340,9 @@ function main () {
   });
 
   app.on('activate', () => {
-   if(mainWindow === null) {
-     createMainWindow();
-   }
+    if(mainWindow === null) {
+      createMainWindow();
+    }
   });
 
   // setup common variables
