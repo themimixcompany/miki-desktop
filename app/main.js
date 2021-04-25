@@ -1,4 +1,4 @@
-const VERSION = '2.11.1';
+const VERSION = '2.11.2';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -273,6 +273,8 @@ function createSplashWindow () {
     transparent: true,
     resizable: false,
     hasShadow: false,
+    visualEffectState: 'inactive',
+    titelBarStyle: 'hidden',
     webPreferences: {
       contextIsolation: true
     }
