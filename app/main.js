@@ -1,4 +1,4 @@
-const VERSION = '2.11.2';
+const VERSION = '2.11.3';
 
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
@@ -135,6 +135,10 @@ function createDatabase () {
 }
 
 function execSQL(statement) {
+  console.log('** execSQL');
+
+  console.log(`statement: ${statement}`);
+
   debugSync(spawnSync(`${PG_PATH}/bin/psql`,
                       ['-h', PG_HOST, '-p', PG_PORT, '-U', PG_USER, '-d', PG_DATABASE, '-c', statement],
                       { encoding: 'utf8'}));
@@ -193,9 +197,11 @@ function setupCommonVars () {
   switch(process.platform) {
   case 'win32':
     MIMIX_DIRECTORY = path.resolve(process.env.APPDATA, 'Mimix');
+    MIKI_PATH = path.resolve(`${MIMIX_DIRECTORY}/miki`);
     break;
   case 'darwin':
     MIMIX_DIRECTORY = path.resolve(os.homedir(), '.mimix');
+    MIKI_PATH = path.resolve(__dirname, 'miki');
     break;
   default:
     console.log(`The platform ${process.platform} is unsupported. Aborting.`);
@@ -247,18 +253,6 @@ function setupPostgres () {
 
 function setupMiki () {
   console.log('** setupMiki');
-
-  switch(process.platform) {
-  case 'win32':
-    MIKI_PATH = path.resolve(`${MIMIX_DIRECTORY}/miki`);
-    break;
-  case 'darwin':
-    MIKI_PATH = path.resolve(__dirname, 'miki');
-    break;
-  default:
-    console.log(`The platform ${process.platform} is unsupported. Aborting.`);
-    process.exit(1);
-  }
 
   process.chdir(MIKI_PATH);
   require(`${MIKI_PATH}/server/index.js`);
