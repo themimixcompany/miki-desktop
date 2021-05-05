@@ -28,7 +28,7 @@ const MIKI_LOCK = path.resolve(os.tmpdir(), 'miki.lock');
 let splashWindow;
 let mainWindow;
 
-function hardSleep (milliseconds) {
+function hardSleep(milliseconds) {
   const date = Date.now();
   let currentDate = null;
 
@@ -37,7 +37,7 @@ function hardSleep (milliseconds) {
   } while (currentDate - date < milliseconds);
 }
 
-function debug (cmd) {
+function debug(cmd) {
   console.log('** debug');
 
   cmd.stdout.on('data', (data) => {
@@ -53,23 +53,23 @@ function debug (cmd) {
   });
 }
 
-function debugSync (cmd) {
+function debugSync(cmd) {
   console.log('** debugSync');
 
-  if(cmd.error) { console.log(`error: ${cmd.error}`); }
-  if(cmd.stdout) { console.log(`stdout: ${cmd.stdout}`); }
-  if(cmd.stderr) { console.log(`stderr: ${cmd.stderr}`); }
-  if(cmd.status) { console.log(`exit code: ${cmd.status}`); }
+  if (cmd.error) { console.log(`error: ${cmd.error}`); }
+  if (cmd.stdout) { console.log(`stdout: ${cmd.stdout}`); }
+  if (cmd.stderr) { console.log(`stderr: ${cmd.stderr}`); }
+  if (cmd.status) { console.log(`exit code: ${cmd.status}`); }
 }
 
-function checkPostgresOnce () {
+function checkPostgresOnce() {
   const cmd = spawnSync(`${PG_PATH}/bin/pg_ctl`,
                         ['status', '-o', `"-p ${PG_PORT}"`, '-D', PG_DATA_PATH]);
 
   return cmd.status == 0;
 }
 
-function checkPostgresPort () {
+function checkPostgresPort() {
   console.log('** checkPostgresPort');
 
   while(!checkPostgresOnce()) {
@@ -77,8 +77,8 @@ function checkPostgresPort () {
   }
 }
 
-function checkMikiOnce () {
-  if(fs.existsSync(MIKI_LOCK)) {
+function checkMikiOnce() {
+  if (fs.existsSync(MIKI_LOCK)) {
     fs.unlinkSync(MIKI_LOCK);
     return true;
   } else {
@@ -86,7 +86,7 @@ function checkMikiOnce () {
   }
 }
 
-function checkMiki () {
+function checkMiki() {
   console.log('** checkMiki');
 
   while(!checkMikiOnce()) {
@@ -94,23 +94,23 @@ function checkMiki () {
   }
 }
 
-function createMimixDirectory () {
+function createMimixDirectory() {
   console.log('** createMimixDirectory');
 
-  if(!fs.existsSync(MIMIX_DIRECTORY)) {
+  if (!fs.existsSync(MIMIX_DIRECTORY)) {
     fs.mkdirSync(MIMIX_DIRECTORY, { recursive: true });
   }
 }
 
-function createPostgresDirectory () {
+function createPostgresDirectory() {
   console.log('** createPostgresDirectory');
 
-  if(!fs.existsSync(`${MIMIX_DIRECTORY}/pgsql`)) {
+  if (!fs.existsSync(`${MIMIX_DIRECTORY}/pgsql`)) {
     fs.mkdirSync(`${MIMIX_DIRECTORY}/pgsql`, { recursive: true });
   }
 }
 
-function initPostgres () {
+function initPostgres() {
   console.log('** initPostgres');
 
   debugSync(spawnSync(`${PG_PATH}/bin/initdb`,
@@ -118,7 +118,7 @@ function initPostgres () {
                       { encoding: 'utf8'}));
 }
 
-function startPostgres () {
+function startPostgres() {
   console.log('** startPostgres');
 
   debug(spawn(`${PG_PATH}/bin/pg_ctl`,
@@ -126,7 +126,7 @@ function startPostgres () {
                '-D', PG_DATA_PATH]));
 }
 
-function createDatabase () {
+function createDatabase() {
   console.log('** createDatabase');
 
   debugSync(spawnSync(`${PG_PATH}/bin/createdb`,
@@ -144,13 +144,13 @@ function execSQL(statement) {
                       { encoding: 'utf8'}));
 }
 
-function setupPrivileges () {
+function setupPrivileges() {
   console.log('** setupPrivileges');
 
   execSQL(`GRANT ALL PRIVILEGES ON DATABASE ${PG_DATABASE} TO ${PG_USER};`);
 }
 
-function installCore () {
+function installCore() {
   console.log('** installCore');
 
   debugSync(spawnSync(`${PG_PATH}/bin/pg_restore`,
@@ -158,11 +158,11 @@ function installCore () {
                       { encoding: 'utf8'}));
 }
 
-function getValueByKey (text, key) {
+function getValueByKey(text, key) {
   const regex = new RegExp("^" + key + ": (.*)$", "m");
   const match = regex.exec(text);
 
-  if(match) {
+  if (match) {
     return match[1];
   }
   else {
@@ -170,7 +170,7 @@ function getValueByKey (text, key) {
   }
 }
 
-function setupAccount () {
+function setupAccount() {
   console.log('** setupAccount');
 
   const configPath = path.resolve(`${MIKI_PATH}/config.yml`);
@@ -178,7 +178,7 @@ function setupAccount () {
   let password;
 
   fs.readFile(configPath, 'utf8', (err, data) => {
-    if(err) {
+    if (err) {
       console.error(err);
     }
 
@@ -191,7 +191,7 @@ function setupAccount () {
   });
 }
 
-function setupCommonVars () {
+function setupCommonVars() {
   console.log('** setupCommonVars');
 
   switch(process.platform) {
@@ -209,10 +209,10 @@ function setupCommonVars () {
   }
 }
 
-function handleStartPostgres () {
+function handleStartPostgres() {
   console.log('** handleStartPostgres');
 
-  if(fs.existsSync(`${PG_DATA_PATH}`)) {
+  if (fs.existsSync(`${PG_DATA_PATH}`)) {
     startPostgres();
     checkPostgresPort();
   } else {
@@ -229,7 +229,7 @@ function handleStartPostgres () {
   }
 }
 
-function setupPostgres () {
+function setupPostgres() {
   console.log('** setupPostgres');
 
   switch(process.platform) {
@@ -251,14 +251,14 @@ function setupPostgres () {
   }
 }
 
-function setupMiki () {
+function setupMiki() {
   console.log('** setupMiki');
 
   process.chdir(MIKI_PATH);
   require(`${MIKI_PATH}/server/index.js`);
 }
 
-function createSplashWindow () {
+function createSplashWindow() {
   splashWindow = new BrowserWindow({
     width: 400,
     height: 400,
@@ -277,7 +277,7 @@ function createSplashWindow () {
   splashWindow.loadURL(`file://${__dirname}/splash/index.html`);
 }
 
-function createMainWindow () {
+function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
@@ -300,13 +300,13 @@ function createMainWindow () {
   });
 }
 
-function main () {
+function main() {
 
   //attempt to get a lock for this process
   const lockRequested = app.requestSingleInstanceLock();
 
   //are we the process that has the lock? if not, quit
-  if(!lockRequested) {
+  if (!lockRequested) {
     app.exit();
   }
 
@@ -322,7 +322,7 @@ function main () {
 
   //if someone started another instance, focus us (the original)
   app.on('second-instance', (event, cmdline, cwd) => {
-    if(mainWindow.isMinimized()) {
+    if (mainWindow.isMinimized()) {
       mainWindow.restore();
     }
     mainWindow.focus();
@@ -330,13 +330,13 @@ function main () {
 
   // macos
   app.on('window-all-closed', () => {
-    if(process.platform !== 'darwin') {
+    if (process.platform !== 'darwin') {
       app.quit();
     }
   });
 
   app.on('activate', () => {
-    if(mainWindow === null) {
+    if (mainWindow === null) {
       createMainWindow();
     }
   });
